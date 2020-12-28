@@ -1,0 +1,551 @@
+'++LotusScript Development Environment:2:5:(Options):0:74
+'********************************************
+'Library CP
+'Olimpus: Mar 11, 2020
+'********************************************
+Option Public
+Option Declare
+Use "Collections"
+Use "DataBaseTools"
+
+'++LotusScript Development Environment:2:5:(Forward):0:1
+Declare Class CP As Interface
+Declare Class Company As Interface
+Declare Sub Initialize
+Declare Function CP_getCP(key As Variant) As Variant
+Declare Function CP_getDB() As NotesDatabase
+
+'++LotusScript Development Environment:2:5:(Declarations):0:10
+Private nLine As String
+Private Const designElem = {CP}
+
+Private cp_db As NotesDatabase
+Private Const FIRMS_SEARCH_KEY = "FIRMS"
+Private Const HR_SEARCH_KEY = "КАДРЫ"
+Private Const VENDOR_SEARCH_KEY = "VENDOR"
+'********************************************
+'Class CP
+'Olimpus: Mar 11, 2020
+'********************************************
+Class CP As Interface
+	Private doc_ex As NotesDocument
+	Private name_ex As String
+	Private lnName_ex As String
+	Private active_ex As Boolean
+	Private nameEng_ex As String
+	Private status_ex As String
+	
+	Sub New (doc As NotesDocument)
+		On Error GoTo ErrH
+
+		Set doc_ex = doc
+		name_ex = doc_ex.Getitemvalue("Caller")(0)
+		lnName_ex = doc_ex.Getitemvalue("NotesAddress")(0)
+		status_ex = doc_ex.Getitemvalue("Status")(0)
+		active_ex = status_ex = "Работает"
+		
+		nameEng_ex =  doc_ex.Getitemvalue("CallerEn")(0)
+		If getNameEng = "" Then
+			Dim pName As New NotesName(doc_ex.Getitemvalue("NotesAddress")(0))
+			nameEng_ex = pName.Common
+		End If 
+	
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	
+	'********************************************
+	'Function getKey
+	'String
+	'Olimpus: Mar 11, 2020
+	'********************************************
+	Function getKey() As String
+	On Error GoTo ErrH
+
+		getKey = doc_ex.Universalid	
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getName
+	'String
+	'Olimpus: Mar 11, 2020
+	'********************************************
+	Function getName() As String
+	On Error GoTo ErrH
+
+		If name_ex = "" Then
+			name_ex = doc_ex.Getitemvalue("Caller")(0)
+		End If
+		getName = name_ex
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getNameEng
+	'String
+	'Olimpus: Mar 11, 2020
+	'********************************************
+	Function getNameEng() As String
+	On Error GoTo ErrH
+
+	getNameEng = doc_ex.Getitemvalue("CallerEn")(0)
+	
+	If getNameEng = "" Then
+			Dim pName As New NotesName(doc_ex.Getitemvalue("NotesAddress")(0))
+			getNameEng = pName.Common
+	End If 
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getDepartment
+	'String
+	'Olimpus: Mar 11, 2020
+	'********************************************
+	Function getDepartment() As String
+	On Error GoTo ErrH
+
+		getDepartment = doc_ex.Getitemvalue("StructureDepartmentPath")(0)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getDepartmentEng
+	'String
+	'Olimpus: Mar 11, 2020
+	'********************************************
+	Function getDepartmentEng() As String
+	On Error GoTo ErrH
+		
+		getDepartmentEng = doc_ex.Getitemvalue("StructureDepartmentPathEng")(0)
+		
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getDepartmentUNID
+	'String
+	'Olimpus: Mar 11, 2020
+	'********************************************
+	Function getDepartmentUNID() As String
+	On Error GoTo ErrH
+
+		getDepartmentUNID = doc_ex.Getitemvalue("StructureDepartmentUNID")(0)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getPosition
+	'String
+	'Olimpus: Mar 11, 2020
+	'********************************************
+	Function getPosition() As String
+	On Error GoTo ErrH
+
+		getPosition = doc_ex.Getitemvalue("StructurePosition")(0)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getPositionEng
+	'String
+	'Olimpus: Mar 11, 2020
+	'********************************************
+	Function getPositionEng() As String
+	On Error GoTo ErrH
+
+		getPositionEng = doc_ex.Getitemvalue("StructurePositionEng")(0)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getPositionUNID
+	'String
+	'Olimpus: Mar 11, 2020
+	'********************************************
+	Function getPositionUNID() As String
+	On Error GoTo ErrH
+
+		getPositionUNID = doc_ex.Getitemvalue("StructurePositionUNID")(0)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function UNID
+	'String
+	'Olimpus: Mar 11, 2020
+	'********************************************
+	Function UNID() As String
+	On Error GoTo ErrH
+
+	unid = doc_ex.getItemValue("UNID")(0)
+	If unid = "" Then unid = doc_ex.Universalid
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getLotusName
+	'String
+	'Olimpus: Mar 11, 2020
+	'********************************************
+	Function getLotusName() As String
+	On Error GoTo ErrH
+
+		getLotusName = doc_ex.Getitemvalue("NotesAddress")(0)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getEmail
+	'String
+	'Olimpus: Mar 11, 2020
+	'********************************************
+	Function getEmail() As String
+	On Error GoTo ErrH
+
+	getEmail = doc_ex.Getitemvalue("CallerEmail")(0)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function isActive
+	'Boolean
+	'Olimpus: Mar 13, 2020
+	'********************************************
+	Function isActive() As Boolean
+	On Error GoTo ErrH
+
+		If status_ex = "Работает"  Or status_ex = "Работает" Then isActive = True
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getHead
+	'CP
+	'Olimpus: Mar 13, 2020
+	'********************************************
+	Function getHead As CP
+	On Error GoTo ErrH
+
+		Set getHead = CP_getCP(doc_ex.Getitemvalue("StructureHeaderPersonUnid")(0))
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getSubstituent
+	'CP
+	'Olimpus: Mar 13, 2020
+	'********************************************
+	Function getSubstituent As CP
+	On Error GoTo ErrH
+
+		Set getSubstituent = CP_getCP(doc_ex.Getitemvalue("AssistantAddress")(0))
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getTableNumber
+	'String
+	'Olimpus: Mar 13, 2020
+	'********************************************
+	Function getTableNumber As String
+	On Error GoTo ErrH
+
+	getTableNumber = doc_ex.Getitemvalue("TabNum")(0)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getCompany
+	'String
+	'Olimpus: Mar 13, 2020
+	'********************************************
+	Function getCompany As Company
+	On Error GoTo ErrH
+
+	
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getFirstName
+	'String
+	'Olimpus: Jul 7, 2020
+	'********************************************
+	Function getFirstName() As String
+	On Error GoTo ErrH
+
+		getFirstName = StrLeft(StrRight(doc_ex.Getitemvalue("CallerNickName")(0)," "), " ")
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function setEmail
+	'Boolean
+	'Olimpus: Jul 20, 2020
+	'********************************************
+	Function setEmail (email As String) As Boolean
+	On Error GoTo ErrH
+
+	Call doc_ex.Replaceitemvalue("CallerEmail", email)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function save
+	'Boolean
+	'Olimpus: Jul 20, 2020
+	'********************************************
+	Function save() As Boolean
+	On Error GoTo ErrH
+
+	save = doc_ex.Save(True, False)	
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getStatus
+	'String
+	'Olimpus: 30.10.2020
+	'********************************************
+	Function getStatus() As String
+	On Error GoTo ErrH
+
+	getStatus = status_Ex
+	
+	GoTo EndH
+ErrH:
+	stop
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+End Class
+'********************************************
+'Class Company
+'Olimpus: Mar 13, 2020
+'********************************************
+Class Company As Interface
+	Private firmUNID As String
+	Private hrUNID As String
+	Private vendorUNID As String
+	Private firmDoc As NotesDocument
+	Private hrDoc As NotesDocument
+	Private vendorDoc As NotesDocument
+	Private hrDb As NotesDatabase
+	Private vendorDb As NotesDatabase
+	
+	Sub New (value As Variant)
+		On Error GoTo ErrH
+
+		If IsObject(Value) Then
+			Select Case TypeName(value)
+				Case "NOTESDOCUMENT"
+					If DBT_getSearchKeyByDb(value.parentDatabase) = FIRMS_SEARCH_KEY Then
+						firmUNID = value.getItemValue("UNID")(0)
+						hrUNID = value.getItemValue("UnidMain")(0)
+						vendorUNID = value.getItemValue("VendorUNID")(0)
+					ElseIf DBT_getSearchKeyByDb(value.parentDatabase) = VENDOR_SEARCH_KEY Then
+						Set vendorDb = value.parentDatabase
+						vendorUNID = value.getItemValue("UNID")(0)
+					ElseIf DBT_getSearchKeyByDb(value.parentDatabase) = HR_SEARCH_KEY Then
+						Set hrDb = value.parentDatase
+						hrUNID = value.getItemValue("UnidMain")(0)
+					End If
+				Case "COMPANY"
+					vendorUNID = value.vendorUNID()
+					firmUNID = value.firmUNID()
+					hrUNID = value.hrUNID()
+					Set hrDb = value.getHRDB()
+					Set vendorDb = value.getVendorDB()
+				Case "CP"
+					
+			End Select
+		End If
+	
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Function UnidMain
+	'String
+	'Olimpus: Mar 13, 2020
+	'********************************************
+	Function UnidMain() As String
+	On Error GoTo ErrH
+
+	unidMain = firmUNID
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+End Class
+'++LotusScript Development Environment:2:2:Initialize:2:10
+
+Sub Initialize
+	On Error GoTo ErrH
+	nLine = Chr(10) & Chr(13)
+
+
+
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(ErL) & nLine & Error$ & nLine & Err
+	Resume endH
+EndH:
+End Sub
+
+
+'++LotusScript Development Environment:2:1:CP_getCP:6:8
+'********************************************
+'Function CP_getCP
+'CP
+'Olimpus: Mar 11, 2020
+'********************************************
+Function CP_getCP(key As Variant) As Variant
+	On Error GoTo ErrH
+	
+	Dim pDoc As notesdocument
+	Dim cp As CP 
+	Dim cpCol As New ObjectCollection
+	
+	Set CP_getCP = Nothing
+	
+	If IsObject(key) Then
+		If TypeName(key) = "NOTESDOCUMENT" Then
+			If key Is nothing Then GoTo endh
+			If DBT_getSearchKeyByDb(key.parentDatabase) = FIRMS_SEARCH_KEY Then
+				Set pDoc = key
+				Set cp = New CP(pDoc)
+				Set CP_getCP = cp
+			End If 
+		ElseIf TypeName(key) = "NOTESDOCUMENTCOLLECTION" Then
+			If DBT_getSearchKeyByDb(key.getFirstDocument.parentDatabase) = FIRMS_SEARCH_KEY Then
+				Set pDoc = key.getFirstDocument
+				While Not pDoc Is Nothing
+					Set cp = New CP(pDoc)
+					Call cpCol.addObject(CP)
+					Set pDoc = key.getNextDocument(pDoc)
+				Wend
+				Set CP_getCP = cpCol
+			End If
+		End If
+	ElseIf IsArray(key) Then
+		If TypeName(key(0)) = "STRING" & key(0) <> "" Then
+			ForAll k In key
+				Set pDoc = CP_getDB.Getview("PersonsByAllPath").Getdocumentbykey(k, True)
+				If Not pDoc Is Nothing Then
+					Set cp = New CP(pDoc)
+					Call cpCol.addObject(cp)
+				End If
+			End ForAll
+			Set CP_getCP = cpCol
+		End If
+	ElseIf TypeName(key) = "STRING" Then
+		Set pDoc = CP_getDB.Getview("PersonsByAllPath").Getdocumentbykey(key, True)
+		If Not pDoc Is Nothing Then
+			Set cp = New CP(pDoc)
+			Set CP_getCP = cp
+		End If
+	End If
+		
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+
+'++LotusScript Development Environment:2:1:CP_getDB:6:8
+'********************************************
+'Function CP_getDB
+'NotesDatabase
+'Olimpus: Mar 11, 2020
+'********************************************
+Function CP_getDB() As NotesDatabase
+	On Error GoTo ErrH
+
+	If cp_db Is Nothing Then Set cp_db = DBT_GetDbBySearchKey(FIRMS_SEARCH_KEY)
+	
+	Set CP_getDB = cp_db
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+
+
+
+
+
+
+
+

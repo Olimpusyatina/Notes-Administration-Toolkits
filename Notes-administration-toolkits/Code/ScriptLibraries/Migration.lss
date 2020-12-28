@@ -1,0 +1,87 @@
+'++LotusScript Development Environment:2:5:(Options):0:74
+'********************************************
+'Library Migration
+'Olimpus: 27.10.2020
+'********************************************
+Option Public
+Option Declare
+Use "MSExcel"
+Use "AdminTools"
+
+'++LotusScript Development Environment:2:5:(Forward):0:1
+Declare Sub Initialize
+Declare Function migrate() As Boolean
+
+'++LotusScript Development Environment:2:5:(Declarations):0:10
+Private nLine As String
+Private Const designElem = {Migration}
+
+'++LotusScript Development Environment:2:2:Initialize:2:10
+
+Sub Initialize
+	On Error GoTo ErrH
+	nLine = Chr(10) & Chr(13)
+
+
+
+	GoTo EndH
+ErrH:
+	stop
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(ErL) & nLine & Error$ & nLine & Err
+	Resume endH
+EndH:
+End Sub
+
+
+'++LotusScript Development Environment:2:1:migrate:6:8
+'********************************************
+'Function migrate
+'Boolean
+'Olimpus: 27.10.2020
+'********************************************
+Function migrate() As Boolean
+	On Error GoTo ErrH
+	nLine = Chr(10) & Chr(13)
+	
+	Dim ws As New NotesUIWorkspace
+	
+	Dim fpath As Variant
+	fPath = ws.Openfiledialog(False, "выберите файл для загрузки", "Excel|*.xlsx")
+	
+	If IsEmpty(fPath) Then GoTo endh
+	
+	Call msExcel.init()
+	Call msExcel.getFile(fPath(0))
+	
+	Dim userMail As String
+	Dim user As ATUser
+	userMail = msExcel.Range("A" & msExcel.i).value
+	While userMail <> "" 
+		Set user = AT_getUser(userMail)
+		If Not user Is Nothing Then
+'			user.forwardingAddress = StrLeft(user.internetAddress, "@") & ".ottoruss.ru@og2gether.mail.onmicrosoft.com"
+'			If user.save() Then	msExcel.Range("B" & msExcel.i).value = user.forwardingAddress
+If InStr(user.forwardingAddress, ".ottoruss.ru@og2gether.mail.onmicrosoft.com") = 0 Then
+'	msExcel.Range("B" & msExcel.i).value = StrLeft(user.internetAddress, "@") & ".ottoruss.ru@og2gether.mail.onmicrosoft.com"
+	user.forwardingAddress = StrLeft(user.internetAddress, "@") & ".ottoruss.ru@og2gether.mail.onmicrosoft.com"
+	If user.save() Then	msExcel.Range("B" & msExcel.i).value = user.forwardingAddress
+'	msExcel.Range("B" & msExcel.i).value = StrLeft(user.internetAddress, "@") & ".ottoruss.ru@og2gether.mail.onmicrosoft.com"
+Else
+	msExcel.Range("B" & msExcel.i).value = user.forwardingAddress
+End If 	
+		
+		Else
+			msExcel.Range("B" & msExcel.i).value ="Пользователь не найден!"
+		End If
+		Call msExcel.incrementI()
+		userMail = msExcel.Range("A" & msExcel.i).value
+	Wend
+	
+	Call msExcel.finish()
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$ & nLine & Err
+	Resume endH
+EndH:
+End Function

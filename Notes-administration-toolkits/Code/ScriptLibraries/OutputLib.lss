@@ -1,0 +1,140 @@
+'++LotusScript Development Environment:2:5:(Options):0:74
+'********************************************
+'Library OutputLib
+'Olimpus: 11.11.2020
+'********************************************
+Option Public
+Option Declare
+
+'++LotusScript Development Environment:2:5:(Forward):0:1
+Declare Sub Initialize
+Declare Function OL_getTempDirectory() As String
+Declare Function OL_newLine() As String
+Declare Function msgBoxTxt(message As String) As String
+Declare Function OL_FileExists (strPath As String) As Boolean
+
+'++LotusScript Development Environment:2:5:(Declarations):0:10
+Private nLine As String
+Private Const designElem = {OutputLib}
+Private iterrator As Integer
+
+Declare Private Function GetTempPath Lib "kernel32.dll" Alias "GetTempPathA" (ByVal nBufferLength As Long, ByVal lpBuffer As String) As Long
+
+'++LotusScript Development Environment:2:2:Initialize:2:10
+
+Sub Initialize
+	On Error GoTo ErrH
+	nLine = Chr(10) & Chr(13)
+
+	
+
+	GoTo EndH
+ErrH:
+	stop
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(ErL) & nLine & Error$ & nLine & Err
+	Resume endH
+EndH:
+End Sub
+
+
+'++LotusScript Development Environment:2:1:OL_getTempDirectory:6:8
+'********************************************
+'Function OL_getTempDirectory
+'String
+'Olimpus: 11.11.2020
+'********************************************
+Function OL_getTempDirectory() As String
+	On Error GoTo ErrH
+
+	Dim res As Long
+	Dim buf As String
+		
+	buf = Space$(256)
+	res = GetTempPath(256, buf)
+	OL_getTempDirectory = Left$(buf, res)
+			
+	GoTo EndH
+ErrH:
+	stop
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+'++LotusScript Development Environment:2:1:OL_newLine:6:8
+'********************************************
+'Function OL_newLine
+'String
+'Olimpus: 18.11.2020
+'********************************************
+Function OL_newLine() As String
+	On Error GoTo ErrH
+
+	
+	
+	GoTo EndH
+ErrH:
+	stop
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+'++LotusScript Development Environment:2:1:msgBoxTxt:6:8
+'********************************************
+'Function msgBoxTxt
+'Boolean
+'Olimpus: 11.11.2020
+'********************************************
+Function msgBoxTxt(message As String) As String
+	On Error GoTo ErrH
+
+	Dim session As NotesSession
+	Dim stream As NotesStream
+	Set session = New NotesSession
+	Set stream = session.CreateStream
+	Dim path As String
+	If iterrator = 0 Then
+		path = OL_GetTempDirectory() & "\msgBox.txt"
+	Else
+		path = OL_GetTempDirectory() & "\msgBox_" & (iterrator) & ".txt"
+	End If
+	
+	If OL_FileExists(path) Then	Kill path
+
+	Call stream.Open(path, "Windows-1251")
+	Call stream.WriteText(message)
+	Call stream.Close
+	
+	msgBoxTxt = path
+	
+	iterrator = iterrator + 1
+	
+	On Error 53 Goto notePad
+	Dim result As Integer	
+	result = Shell ("note " & path, 1)
+	GoTo Endh
+notePad:
+	If Err Then Resume 0
+	result = Shell ("notepad " & path, 1)
+	
+	GoTo EndH
+ErrH:
+	stop
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+
+'++LotusScript Development Environment:2:1:OL_FileExists:1:8
+Function OL_FileExists (strPath As String) As Boolean
+	On Error GoTo handler
+	Const FuncName = {Function "FileExists" }
+	Dim errStr As String
+	
+	OL_FileExists = (Dir$ (strPath) <> "" )
+	
+	GoTo endh
+handler:
+	errStr = FuncName & ": " & Err &", в стр " & Erl & Chr(10) & Chr(13) & Error$  & Chr(10) & Chr(13)  & strPath
+	Error Err,ErrStr
+endh:
+End Function

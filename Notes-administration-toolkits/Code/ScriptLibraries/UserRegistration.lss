@@ -1,0 +1,331 @@
+'++LotusScript Development Environment:2:5:(Options):0:74
+'********************************************
+'Library UserRegistration
+'Olimpus: Sep 18, 2019
+'********************************************
+Option Public
+Option Declare
+Use "A1_Setup"
+Use "AdminTools"
+
+'++LotusScript Development Environment:2:5:(Forward):0:1
+Declare Class UserRegistrator
+Declare Sub Initialize
+Declare Function openUserRegistration As Boolean
+
+'++LotusScript Development Environment:2:5:(Declarations):0:10
+Private nLine As String
+Private Const designElem = {UserRegistration}
+
+Private Const REGISTRATION_USER_FORM = "userRegistration"
+
+Private Const DEFAULT_USER_PASSWORD= "1"
+Private Const CERTIFICATE_ID_PASSWORD = "BSTver"
+
+Private Const MOSCOW_REGISTRATION_SERVER = "DCS/OTTO/RU"
+Private Const MOSCOW_POLICY_NAME = "/shared_login_DCS_POLICY"
+Private Const MOSCOW_MAIL_TEMPLATE ="mail901ru.ntf"
+Private Const MOSCOW_ID_VAULT_PATH = "\\ps-fs2\Departments\IT\2. Группа технической поддержки\Lotus ID MSK\"
+
+Private Const TVER_REGISTRATION_SERVER = "BST/OTTO/RU"
+Private Const TVER_POLICY_NAME = "/BST_POLICY"
+Private Const TVER_MAIL_TEMPLATE = "mail9.ntf"
+Private Const TVER_ID_VAULT_PATH = "\\bs-fs\DEPARTMENTS\IT\Lotus\User_ID\"'"C:\Test\ID\"'
+'********************************************
+'Class UserRegistrator
+'Olimpus: Sep 18, 2019
+'********************************************
+Class UserRegistrator
+	Private firstName As String
+	Private middleName As String
+	Private lastName As String
+	Private location As Integer
+	Private company As String
+	Private shortName As String
+	Private eMail As String
+	Private forwardAddress As String
+	
+	Sub New (doc As notesdocument)
+		On Error GoTo ErrH
+
+		firstName = doc.Getitemvalue("firstName")(0)
+		middleName = doc.Getitemvalue("middleName")(0)
+		If middleName <> "" Then If InStr(middleName, ".") = 0 Then middleName = middleName & "." 
+		lastName = doc.Getitemvalue("lastName")(0)
+		shortName = doc.Getitemvalue("shortName")(0)
+		eMail = doc.Getitemvalue("eMail")(0)
+		company = doc.Getitemvalue("company")(0)
+		location = doc.Getitemvalue("location")(0)
+				
+		If eMail <> "" Then
+			forwardAddress = StrLeft(eMail, "@") & ".ottoruss.ru@og2gether.mail.onmicrosoft.com"
+		Else
+			eMail	= getMailName() & "@ottoruss.ru"
+			forwardAddress = getMailName() & ".ottoruss.ru@og2gether.mail.onmicrosoft.com"
+		End If
+		
+		If shortName = "" Then
+			shortName = Left(firstName, 1) & lastName	
+		End If
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Function register
+	'Boolean
+	'Olimpus: 30.10.2020
+	'********************************************
+	Function register() As Boolean
+	On Error GoTo ErrH
+
+	Dim reg As New NotesRegistration
+	Dim user As ATUser
+		
+		userCanBeRegistred
+		
+		reg.Createmaildb = False
+	
+		reg.Mailinternetaddress = eMail
+		reg.Enforceuniqueshortname = True
+		reg.CertifierName = "/OTTO/RU"
+		reg.Certifieridfile = {C:\Program Files (x86)\IBM\Notes\Data\ids\certBST.id}
+		reg.UseCertificateAuthority = True
+		reg.Shortname = shortName
+		reg.Minpasswordlength = 1
+		reg.IDType = ID_HIERARCHICAL
+		reg.RegistrationLog = "log.nsf"
+		reg.UpdateAddressBook = True
+
+	Dim mailServer As String
+	Dim idPath As String
+		If location = 1 Then
+			reg.Registrationserver = MOSCOW_REGISTRATION_SERVER
+			reg.Policyname = MOSCOW_POLICY_NAME
+			Mailserver = MOSCOW_REGISTRATION_SERVER
+			idPath = MOSCOW_ID_VAULT_PATH & LCase(shortName) & ".id"
+			If FileExists(idPath) Then
+				Kill idPath
+			End If
+		Else
+			reg.Registrationserver = TVER_REGISTRATION_SERVER
+			reg.Policyname = TVER_POLICY_NAME
+			Mailserver = TVER_REGISTRATION_SERVER
+			idPath = TVER_ID_VAULT_PATH & firstName & " " & middleName & " " &  lastName & "\"
+'			If Not FileExists(idPath) Then
+				MkDir idPath
+'			End If
+			idPath = idPath & LCase(shortName) & ".id"
+			MsgBox idPath
+			If FileExists(idPath) Then
+				Kill idPath
+			End If
+		End If
+		Dim companyName As String
+		Dim group() As String
+		Dim i As Integer
+		
+		ReDim Preserve group(i) As String
+		group(i) = "OTTOUsers1"
+		i = i + 1
+		Select Case company
+			Case	"ДКС"
+				ReDim Preserve group(i) As String
+				group(i) = "DCS_Moscow"
+				i = i + 1
+				companyName = "Direct Catalogue Service"
+			Case	"ДКС Тверь"
+				ReDim Preserve group(i) As String
+				group(i) = "DCS_Tver"
+				i = i + 1
+				ReDim Preserve group(i) As String
+				group(i) = "BST_Access"
+				i = i + 1
+				companyName = "Direct Catalogue Service (Tver)"
+			Case	"БС"
+				ReDim Preserve group(i) As String
+				group(i) = "Tver_Logistics"
+				i = i + 1
+				companyName = "Business Service"
+			Case	"еСол"
+				If location = 2 Then
+					ReDim Preserve group(i) As String
+					group(i) = "eSolutions_Tver"
+					i = i + 1
+					ReDim Preserve group(i) As String
+					group(i) = "BST_Access"
+					i = i + 1
+				Else
+					ReDim Preserve group(i) As String
+					group(i) = "eSolutions_Moscow"
+					i = i + 1				
+				End If
+				companyName = "eSolutions"
+			Case Else
+				Error 5012, "No company!!!"
+		End Select
+		ReDim Preserve group(i) As String
+		group(i) = "LocalDomainUsers1"
+		i = i + 1
+		reg.Grouplist = group
+		reg.Mailsystem = 5
+		
+		
+		Dim var As Variant
+	
+		var = reg.Registernewuser(lastName, idPath, Mailserver, firstName, middleName, CERTIFICATE_ID_PASSWORD, "", "", "", forwardAddress, DEFAULT_USER_PASSWORD, NOTES_FULL_CLIENT)
+		
+		Call AT_getNabOnServer(reg.Registrationserver)
+
+		Set user = AT_getUSer(reg.Mailinternetaddress)
+		If user Is Nothing Then
+			MsgBox "Не найден документ пользователя!" & nLine & "Необходимо прописать компанию вручную"
+		Else
+			user.company = companyName
+			Call user.save()
+			MsgBox "Пользователь зарегистрирован!"			
+		End If
+	GoTo EndH
+ErrH:
+	stop
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getMailName
+	'String
+	'Olimpus: 30.10.2020
+	'********************************************
+	Private Function getMailName() As String
+	On Error GoTo ErrH
+
+	Dim user As ATUser
+	Dim mName As String
+	mName = firstName & "." & lastName
+	If userExists(mName) Then
+		mName = firstName & "." & middleName & lastName
+		If userExists(mName) Then
+			Error 6053, "Такой пользователь уже есть!"
+		End If
+	End If
+	
+	getMailName = mName
+	
+	GoTo EndH
+ErrH:
+	stop
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function userExists
+	'Boolean
+	'Olimpus: 04.12.2020
+	'********************************************
+	Private Function userCanBeRegistred() As Boolean
+	On Error GoTo ErrH
+		
+		If userExists(FullTrim(firstName & " " & middleName & " " & lastName)) Then Error 6050, "Пользователь с таким ФИО уже существует!"
+		
+		If userExists(shortName) Then Error 6051, "Пользователь с таким shortName уже существует!"
+		
+		If userExists(eMail) Then Error 6052, "Пользователь с таким Mailinternetaddress уже существует!"
+		
+		If userExists(forwardAddress) Then Error 6052, "Пользователь с таким forwardAddress уже существует!"
+			
+		userCanBeRegistred = True
+	
+	GoTo EndH
+ErrH:
+	stop
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function checkUser
+	'Boolean
+	'Olimpus: 04.12.2020
+	'********************************************
+	Private Function userExists (searchString As String) As Boolean
+	On Error GoTo ErrH
+
+		Dim user As ATUser
+		Set user = AT_getUser(searchString)
+		userExists =	Not user Is Nothing 
+	
+	GoTo EndH
+ErrH:
+	stop
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+End Class
+'++LotusScript Development Environment:2:2:Initialize:2:10
+
+Sub Initialize
+	On Error GoTo ErrH
+	nLine = Chr(10) & Chr(13)
+
+
+
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(ErL) & nLine & Error$ & nLine & Err
+	Resume endH
+EndH:
+End Sub
+
+
+'++LotusScript Development Environment:2:1:openUserRegistration:6:8
+'********************************************
+'Function openUserRegistration
+'Boolean
+'Olimpus: Sep 18, 2019
+'********************************************
+Function openUserRegistration As Boolean
+	On Error GoTo ErrH
+
+	Dim ws As New NotesUIWorkspace
+	Dim s As New NotesSession
+	Dim regDoc As NotesDocument
+	Dim regDc As NotesDocumentCollection
+	Set regDc = s.Currentdatabase.search({form = "} & REGISTRATION_USER_FORM & {"}, Nothing, 0)
+	
+	If regDc.Count = 0 Then
+		Set regDoc = s.Currentdatabase.Createdocument()
+		Call regDoc.Replaceitemvalue("form", REGISTRATION_USER_FORM)
+		Call regDoc.Save(True, False)
+	Else
+		Set regDoc = regDc.Getfirstdocument()
+		Call regDoc.Replaceitemvalue("", "")
+		Call regDoc.Replaceitemvalue("", "")
+		Call regDoc.Replaceitemvalue("", "")
+		Call regDoc.Replaceitemvalue("", "")
+	End If
+	
+	Call  ws.Dialogbox(REGISTRATION_USER_FORM, True, True, False, False, False, False, "Регистрация пользователя", regDoc, True, False, True)
+		
+	openUserRegistration = False
+		
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

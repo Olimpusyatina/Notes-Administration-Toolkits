@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?><note xmlns="http://www.lotus.com/dxl" class="filter" maintenanceversion="1.0" replicaid="432585B300289458" version="11.0">
+<noteinfo noteid="816" sequence="15" unid="42DF0632FF98BC4D43258601003EE2B5">
+<created><datetime>20201014T142652,69+03</datetime></created>
+<modified><datetime>20201015T153532,36+03</datetime></modified>
+<revised><datetime>20201015T153532,35+03</datetime></revised>
+<lastaccessed><datetime>20201015T153532,35+03</datetime></lastaccessed>
+<addedtofile><datetime>20201014T142652,77+03</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Alexandr S. Olympiev/O=OTTO/C=RU</name></updatedby>
+<wassignedby><name>CN=Alexandr S. Olympiev/O=OTTO/C=RU</name></wassignedby>
+<item name="$TITLE" sign="true"><text>CalendarEntry</text></item>
+<item name="$Flags"><text>s34Q</text></item>
+<item name="$PublicAccess" sign="true"><text>1</text></item>
+<item name="$DesignerVersion"><text>8.5.3</text></item>
+
+</note>

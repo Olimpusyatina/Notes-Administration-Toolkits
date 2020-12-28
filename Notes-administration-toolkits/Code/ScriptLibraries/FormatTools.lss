@@ -1,0 +1,616 @@
+'++LotusScript Development Environment:2:5:(Options):0:74
+'********************************************
+'Library FormatTools
+'Olimpus: Mar 24, 2020
+'********************************************
+Option Public
+Option Declare
+
+'++LotusScript Development Environment:2:5:(Forward):0:1
+Declare Sub Initialize
+Declare Function FT_dateToTextFormat(dt As Variant) As String
+Declare Function FT_stringToDouble(inputString As String) As Double
+Declare Function FT_dateToFormat(dt As Variant) As String
+Declare Function FT_numberToText(number As double) As String
+Declare Function FT_monthToString(monthNumber As Variant) As String
+Declare Function FT_monthToStringRus(monthNumber As Variant) As String
+Declare Private Function FT_getNumberOnPosition(number As Double, I As integer)  As Integer
+Declare Function FT_NumberToTextDEPRICATED(n As double) As String
+Declare Function FT_monthToStringEng(monthNumber As Variant) As String
+Declare Function FT_byteReadable(bytes As Double) As String
+
+'++LotusScript Development Environment:2:5:(Declarations):0:10
+Private nLine As String
+Private Const designElem = {FormatTools}
+
+Private local As String
+Private ni As NotesInternational
+
+'++LotusScript Development Environment:2:2:Initialize:2:10
+
+Sub Initialize
+	On Error GoTo ErrH
+	
+	nLine = Chr(10) & Chr(13)
+	Dim s As New NotesSession
+	local = s.Getenvironmentstring("localLang")		
+	
+	Set ni = s.International
+
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(ErL) & nLine & Error$ & nLine & Err
+	Resume endH
+EndH:
+End Sub
+
+
+
+'++LotusScript Development Environment:2:1:FT_dateToTextFormat:6:8
+'********************************************
+'Function FT_dateToTextFormat
+'String
+'Olimpus: Mar 26, 2020
+'********************************************
+Function FT_dateToTextFormat(dt As Variant) As String
+	On Error GoTo ErrH
+
+	
+	Select Case local
+		Case "RUS"
+			FT_dateToTextFormat = Format(dt, "«dd» " & FT_monthToStringRus(Month(dt)) & " yyyy года" )
+		Case "ENG"
+			FT_dateToTextFormat = Format(dt, FT_monthToStringEng(Month(dt)) & " dd yyyy year")
+		Case Else
+			If ni.isDateDMY() Then
+				FT_dateToTextFormat = Format(dt,  "«dd» " & FT_monthToStringRus(Month(dt)) & " yyyy года")
+			ElseIf ni.Isdatemdy() Then				
+				FT_dateToTextFormat = Format(dt,  FT_monthToStringEng(Month(dt)) & " dd yyyy year")
+			Else
+				FT_dateToTextFormat = Format(dt, "yyyy " & FT_monthToString(Month(dt)) & " dd")
+			End If
+	End Select
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+'++LotusScript Development Environment:2:1:FT_stringToDouble:6:8
+'********************************************
+'Function FT_stringToDouble
+'String
+'Olimpus: Mar 24, 2020
+'********************************************
+Function FT_stringToDouble(inputString As String) As Double
+	On Error GoTo ErrH
+
+	Dim doubleString As String
+	doubleString = Replace(Replace(inputString, ".", ni.Decimalsep), ",", ni.Decimalsep)
+	If IsNumeric(doubleString) Then FT_stringToDouble = CDbl(doubleString)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+
+'++LotusScript Development Environment:2:1:FT_dateToFormat:6:8
+'********************************************
+'Function FT_dateToFormat
+'String
+'Olimpus: Mar 24, 2020
+'********************************************
+Function FT_dateToFormat(dt As Variant) As String
+	On Error GoTo ErrH
+	
+	Select Case local
+		Case "RUS"
+			FT_dateToFormat = Format(dt, "dd.mm.yyyy")
+		Case "ENG"
+			FT_dateToFormat = Format(dt, "mm/dd/yyyy")
+		Case Else
+			If ni.isDateDMY() Then
+				FT_dateToFormat = Format(dt, "dd" & ni.Datesep & "mm" & ni.Datesep & "yyyy")
+			ElseIf ni.Isdatemdy() then				
+				FT_dateToFormat = Format(dt, "mm" & ni.Datesep & "dd" & ni.Datesep & "yyyy")
+			Else
+				FT_dateToFormat = Format(dt, "yyyy" & ni.Datesep & "mm" & ni.Datesep & "dd")
+			End If
+	End Select
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+
+'++LotusScript Development Environment:2:1:FT_numberToText:6:8
+'********************************************
+'Function numberToText
+'String
+'Olimpus: Mar 24, 2020
+'********************************************
+Function FT_numberToText(number As double) As String
+	On Error GoTo ErrH
+
+	If number = 0 Then
+		FT_numberToText = "ноль"
+		GoTo EndH
+	End If
+	
+	Dim numeral (0 To 9), decimical(0 To 9), cent(0 To 9), numeralSuffix(0 To 9), dozen(0 To 9) As String
+	Dim numberByNumber() As Integer
+	Dim i As Integer
+	Dim result As String
+	
+	numeral(0) = ""
+	numeral(1) = "один "
+	numeral(2) = "два "
+	numeral(3) = "три "
+	numeral(4) = "четыре "
+	numeral(5) = "пять "
+	numeral(6) = "шесть "
+	numeral(7) = "семь "
+	numeral(8) = "восемь "
+	numeral(9) = "девять "
+	
+	decimical(0) = ""
+	decimical(1) = "десять "
+	decimical(2) = "двадцать "
+	decimical(3) = "тридцать "
+	decimical(4) = "сорок "
+	decimical(5) = "пятьдесят "
+	decimical(6) = "шестьдесят "
+	decimical(7) = "семьдесят "
+	decimical(8) = "восемьдесят "
+	decimical(9) = "девяносто "
+	
+	cent(0) = ""
+	cent(1) = "сто "
+	cent(2) = "двести "
+	cent(3) = "триста "
+	cent(4) = "четыреста "
+	cent(5) = "пятьсот "
+	cent(6) = "шестьсот "
+	cent(7) = "семьсот "
+	cent(8) = "восемьсот "
+	cent(9) = "девятьсот "
+
+	numeralSuffix(0) = ""
+	numeralSuffix(1) = "одна "
+	numeralSuffix(2) = "две "
+	numeralSuffix(3) = numeral(3)
+	numeralSuffix(4) = numeral(4)
+	numeralSuffix(5) = numeral(5)
+	numeralSuffix(6) = numeral(6)
+	numeralSuffix(7) = numeral(7)
+	numeralSuffix(8) = numeral(8)
+	numeralSuffix(9) = numeral(9)
+	
+	dozen(0) = "десять "
+	dozen(1) = "одиннадцать "
+	dozen(2) = "двенадцать "
+	dozen(3) = "тринадцать "
+	dozen(4) = "четырнадцать "
+	dozen(5) = "пятнадцать "
+	dozen(6) = "шестнадцать "
+	dozen(7) = "семнадцать "
+	dozen(8) = "восемнадцать "
+	dozen(9) = "девятнадцать "
+	
+	ReDim numberByNumber(1 To Len(CStr(number))) As Integer
+	
+	For i = Len(CStr(number)) To 1 Step -1	
+		numberByNUmber(i) = FT_getNumberOnPosition(number, i)
+	Next
+	Dim modVal As Integer
+	
+	For i = UBound(numberByNumber) To lbound(numberByNumber) Step -1
+		modVal = i Mod 3
+		Select Case i Mod 3
+		Case 1
+			If UBound(numberByNumber) > i Then
+				If numberByNumber(i+1) = 1 Then
+					result = result + dozen(NumberByNumber(i))
+				Else
+					If i = 4 Then
+						result = result + numeralSuffix(NumberByNumber(i))
+					Else
+						result = result + numeral(NumberByNumber(i))
+					End If
+				End If
+			Else
+				If i = 4 Then
+					result = result + numeralSuffix(NumberByNumber(i))
+				Else
+					result = result + numeral(NumberByNumber(i))
+				End If
+			End If
+			If UBound(numberByNumber) > i Then
+				If numberByNUmber(i+1) = 1 Or numberByNumber(i) > 4 Then
+					Select Case i 
+						Case 10
+							result = result + "миллиардов "
+						Case 7
+						result = result + "миллионов "
+						Case 4
+						result = result + "тысяч "
+					End Select
+				ElseIf numberByNUmber(i) = 1 Then
+					Select Case i 
+					Case 10
+						result = result + "миллиард "
+					Case 7
+						result = result + "миллион "
+					Case 4
+						result = result + "тысяча "
+					End select
+				ElseIf NumberByNumber(i) > 1 And NumberByNumber(i) < 5 Then
+					Select Case i 
+					Case 10
+						result = result + "миллиарда "
+					Case 7
+						result = result + "миллиона "
+					Case 4
+						result = result + "тысячи "
+				End Select
+				ElseIf numberByNUmber(i+1) = 0 Or numberByNumber(i) = 0 Then
+					Select Case i 
+					Case 10
+						result = result + "миллиардов "
+					Case 7
+						result = result + "миллионов "
+					Case 4
+						result = result + "тысяч "
+				End Select
+				End If
+			Else
+				If numberByNUmber(i) = 1 Then
+					Select Case i 
+					Case 10
+						result = result + "миллиард "
+					Case 7
+						result = result + "миллион "
+					Case 4
+						result = result + "тысяча "
+				End Select
+				ElseIf NumberByNumber(i) > 1 And NumberByNumber(i) < 5 Then
+					Select Case i 
+					Case 10
+						result = result + "миллиарда "
+					Case 7
+						result = result + "миллиона "
+					Case 4
+						result = result + "тысячи "
+				End Select
+				Else 
+					Select Case i 
+					Case 10
+						result = result + "миллиардов "
+					Case 7
+						result = result + "миллионов "
+					Case 4
+						result = result + "тысяч "
+				End Select
+				End If
+			End If
+		Case 2
+			If numberByNumber(i) <> 1 Then
+				result = result + decimical(NumberByNumber(i))
+			End If
+		Case 0
+			result = result + cent(NumberByNumber(i))
+	End Select
+		
+	Next
+	
+	FT_numberToText = result
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+'++LotusScript Development Environment:2:1:FT_monthToString:6:8
+'********************************************
+'Function FT_monthToString
+'String
+'Olimpus: Mar 24, 2020
+'********************************************
+Function FT_monthToString(monthNumber As Variant) As String
+	On Error GoTo ErrH
+	
+	Select Case local
+		Case "RUS"
+			FT_monthToString = FT_monthToStringRus(Monthnumber)
+		Case "ENG"
+			FT_monthToString = FT_monthToStringEng(Monthnumber)
+		Case Else
+			FT_monthToString = FT_monthToStringRus(Monthnumber)
+	End Select
+
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+
+'++LotusScript Development Environment:2:1:FT_monthToStringRus:6:8
+'********************************************
+'Function FT_monthToStringRus
+'String
+'Olimpus: Mar 24, 2020
+'********************************************
+Function FT_monthToStringRus(monthNumber As Variant) As String
+	On Error GoTo ErrH
+
+	FT_monthToStringRus = CStr(monthNumber)
+	
+	If Not IsNumeric(monthNumber) Then GoTo endh
+	If CInt(monthNumber) < 1 Or CInt(monthNumber) > 12 Then GoTo Endh
+
+	Select Case monthNumber
+		Case 1: FT_monthToStringRus = "января"
+		Case 2: FT_monthToStringRus = "февраля"
+		Case 3: FT_monthToStringRus = "марта"
+		Case 4: FT_monthToStringRus = "апреля"
+		Case 5: FT_monthToStringRus = "мая"
+		Case 6: FT_monthToStringRus = "июня"
+		Case 7: FT_monthToStringRus = "июля"
+		Case 8: FT_monthToStringRus = "августа"
+		Case 9: FT_monthToStringRus = "сентября"
+		Case 10: FT_monthToStringRus = "октября"
+		Case 11: FT_monthToStringRus = "ноября"
+		Case 12: FT_monthToStringRus = "декабря"
+	End Select
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+
+'++LotusScript Development Environment:2:1:FT_getNumberOnPosition:6:8
+'********************************************
+'Function getClass
+'Variant
+'Olimpus: Mar 24, 2020
+'********************************************
+Private Function FT_getNumberOnPosition(number As Double, I As integer)  As Integer
+	On Error GoTo ErrH
+
+	
+	If Len(CStr(Number)) < i Then 
+		FT_getNumberOnPosition = 0
+		GoTo EndH
+	End If 
+	FT_getNumberOnPosition = Fix((number Mod 10^i)/10^(i-1)) 
+
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+'++LotusScript Development Environment:2:1:FT_NumberToTextDEPRICATED:7:8
+'********************************************
+'Function FT_numberToText
+'DEPRICATED!!!!!!!!!!!!!!!!!!!!
+'String
+'Olimpus: Mar 24, 2020
+'********************************************
+Function FT_NumberToTextDEPRICATED(n As double) As String
+	On Error GoTo ErrH
+
+	If n = 0 Then
+		FT_NumberToTextDEPRICATED = "ноль"
+		GoTo EndH
+	End If
+
+	Dim Nums1 (0 To 9), Nums2(0 To 9), Nums3(0 To 9), Nums4(0 To 9), Nums5(0 To 9) As String
+	
+	Dim ed As Integer
+	Dim dec As Integer
+	Dim sot As Integer
+	Dim tys As Integer
+	Dim dectys As Integer
+	Dim sottys As Integer
+	Dim mil As Integer
+	Dim decmil As Integer
+	
+	Dim sotmil_txt As String	
+	Dim mil_txt As String
+	Dim decmil_txt As String
+	Dim tys_txt As String
+	Dim dectys_txt As String
+	Dim sottys_txt As String
+	Dim sot_txt As String
+	Dim dec_txt As String
+	Dim ed_txt As String
+	
+	Nums1(0) = ""
+	Nums1(1) = "один "
+	Nums1(2) = "два "
+	Nums1(3) = "три "
+	Nums1(4) = "четыре "
+	Nums1(5) = "пять "
+	Nums1(6) = "шесть "
+	Nums1(7) = "семь "
+	Nums1(8) = "восемь "
+	Nums1(9) = "девять "
+	
+	Nums2(0) = ""
+	Nums2(1) = "десять "
+	Nums2(2) = "двадцать "
+	Nums2(3) = "тридцать "
+	Nums2(4) = "сорок "
+	Nums2(5) = "пятьдесят "
+	Nums2(6) = "шестьдесят "
+	Nums2(7) = "семьдесят "
+	Nums2(8) = "восемьдесят "
+	Nums2(9) = "девяносто "
+	
+	Nums3(0) = ""
+	Nums3(1) = "сто "
+	Nums3(2) = "двести "
+	Nums3(3) = "триста "
+	Nums3(4) = "четыреста "
+	Nums3(5) = "пятьсот "
+	Nums3(6) = "шестьсот "
+	Nums3(7) = "семьсот "
+	Nums3(8) = "восемьсот "
+	Nums3(9) = "девятьсот "
+
+	Nums4(0) = ""
+	Nums4(1) = "одна "
+	Nums4(2) = "две "
+	Nums4(3) = Nums1(3)
+	Nums4(4) = Nums1(4)
+	Nums4(5) = Nums1(5)
+	Nums4(6) = Nums1(6)
+	Nums4(7) = Nums1(7)
+	Nums4(8) = Nums1(8)
+	Nums4(9) = Nums1(9)
+	
+	Nums5(0) = "десять "
+	Nums5(1) = "одиннадцать "
+	Nums5(2) = "двенадцать "
+	Nums5(3) = "тринадцать "
+	Nums5(4) = "четырнадцать "
+	Nums5(5) = "пятнадцать "
+	Nums5(6) = "шестнадцать "
+	Nums5(7) = "семнадцать "
+	Nums5(8) = "восемнадцать "
+	Nums5(9) = "девятнадцать "
+			
+'	разделяем число на разряды, используя вспомогательную функцию Class
+	ed = FT_getNumberOnPosition(n, 1)
+	dec = FT_getNumberOnPosition(n, 2)
+	sot = FT_getNumberOnPosition(n, 3)
+	tys = FT_getNumberOnPosition(n, 4)
+	dectys = FT_getNumberOnPosition(n, 5)
+	sottys = FT_getNumberOnPosition(n, 6)
+	mil = FT_getNumberOnPosition(n, 7)
+	decmil = FT_getNumberOnPosition(n, 8)
+
+	
+
+	'проверяем миллионы
+	Select Case decmil
+		Case 1
+			mil_txt = Nums5(mil) & "миллионов "
+			GoTo www
+		Case 2 To 9
+			decmil_txt = Nums2(decmil)
+	End Select
+	Select Case mil
+		Case 1
+			mil_txt = Nums1(mil) & "миллион "
+		Case 2, 3, 4
+			mil_txt = Nums1(mil) & "миллиона "
+		Case  5 To 20
+			mil_txt = Nums1(mil) & "миллионов "
+	End Select
+www:
+	sottys_txt = Nums3(sottys)
+	'проверяем тысячи
+	Select Case dectys
+		Case 1
+			tys_txt = Nums5(tys) & "тысяч "
+			GoTo eee
+		Case 2 To 9
+			dectys_txt = Nums2(dectys)
+	End Select
+	Select Case tys
+		Case 0
+			If dectys > 0 Then tys_txt = Nums4(tys) & "тысяч "
+		Case 1
+			tys_txt = Nums4(tys) & "тысяча "
+		Case 2, 3, 4
+			tys_txt = Nums4(tys) & "тысячи "
+		Case 5 To 9
+			tys_txt = Nums4(tys) & "тысяч "
+	End Select
+	If dectys = 0 And tys = 0 And sottys <> 0 Then sottys_txt = sottys_txt & " тысяч "
+eee:
+	sot_txt = Nums3(sot)
+	'проверяем десятки
+	Select Case dec
+		Case 1
+			ed_txt = Nums5(ed)
+			GoTo rrr
+		Case 2 To 9
+			dec_txt = Nums2(dec)
+	End Select
+	
+	ed_txt = Nums1(ed)
+rrr:
+	'формируем итоговую строку
+	FT_NumberToTextDEPRICATED = decmil_txt & mil_txt & sottys_txt & dectys_txt & tys_txt & sot_txt & dec_txt & ed_txt
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+
+'++LotusScript Development Environment:2:1:FT_monthToStringEng:6:8
+'********************************************
+'Function FT_monthToStringEng
+'String
+'Olimpus: Mar 24, 2020
+'********************************************
+Function FT_monthToStringEng(monthNumber As Variant) As String
+	On Error GoTo ErrH
+
+	FT_monthToStringEng = CStr(monthNumber)
+	
+	If Not IsNumeric(monthNumber) Then GoTo endh
+	If CInt(monthNumber) < 1 Or CInt(monthNumber) > 12 Then GoTo Endh
+
+	Select Case monthNumber
+		Case 1: FT_monthToStringEng = "January"
+		Case 2: FT_monthToStringEng = "February"
+		Case 3: FT_monthToStringEng = "March"
+		Case 4: FT_monthToStringEng = "April"
+		Case 5: FT_monthToStringEng = "May"
+		Case 6: FT_monthToStringEng = "June"
+		Case 7: FT_monthToStringEng = "July"
+		Case 8: FT_monthToStringEng = "August"
+		Case 9: FT_monthToStringEng = "September"
+		Case 10: FT_monthToStringEng = "October"
+		Case 11: FT_monthToStringEng = "November"
+		Case 12: FT_monthToStringEng = "December"
+	End Select
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+
+'++LotusScript Development Environment:2:1:FT_byteReadable:6:8
+'********************************************
+'Function FT_byteReadable
+'String
+'Olimpus: Oct 1, 2020
+'********************************************
+Function FT_byteReadable(bytes As Double) As String
+	On Error GoTo ErrH
+
+	
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function

@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='11.0' maintenanceversion='1.0'
+ replicaid='432585B300289458'>
+<noteinfo noteid='1a2' unid='39F2D64CE4BE0B6A432585B30070F50E' sequence='1'>
+<created><datetime>20200728T233347,66+03</datetime></created>
+<modified><datetime>20200728T233347,69+03</datetime></modified>
+<revised><datetime>20200728T233347,68+03</datetime></revised>
+<lastaccessed><datetime>20200728T233347,68+03</datetime></lastaccessed>
+<addedtofile><datetime>20200728T233347,68+03</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Alexandr S. Olympiev/O=OTTO/C=RU</name></updatedby>
+<wassignedby><name>CN=Alexandr S. Olympiev/O=OTTO/C=RU</name></wassignedby>
+<item name='$TITLE'><text>$DBIcon</text></item>
+<item name='$Flags'><text>34Ci~Q</text></item>
+<item name='$ImagesWide' sign='true'><number>1</number></item>
+<item name='$ImagesHigh' sign='true'><number>1</number></item>
+<item name='$ImagesColorize' sign='true'><number>0</number></item>
+<item name='$FileSize' sign='true'><number>763</number></item>
+<item name='$ImageData' sign='true'>
+<rawitemdata type='1'>
+mQAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAH0AHAAAAAIAAAAAAPsCAAABAAAAAQAAAAAAAAB8
+AAUDAAD7AvwCiVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAA
+AARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAKQSURBVFhHxZetcttAFIU7eYA+
+SIFhYWFBYEFAgB+hwCAgIMCPUFAQYFBQICAgYCBgICBgICAgILBAQEBAwMDAwNv7rbP+y8rWKs3k
+zJyZzf0596xWK08+6Q/GYANZlumiKAxZD4W3geVyqbfbrZPkfOFlIE3T/bCZWuunYkfWNk6ND7wM
+bDYbw/FypW/C5oTEbN4HvQ3Ei4URn6nXwy3JUUNtX/Q2wPki/pi3Mqx2khw1SZK8dF1HbwOc7Xq9
+3hkIZKCD47Q1Ne/yBMIwNOLPpRyBYzgkRw21fXHVAHe8qirDlYjD+1TO/Gw4MZu39X2+DxcNNI2I
+rlZO/i5a/Zg1hqxdNRCNS+g0YHYsAmnV6ttFrb/FfqSHXjTQ6oLTAGfYSmNet/pzUOmbv2oQ6UUD
+ra73wmkgjmPdtq1+WMr5OoS7OIoqs/PjGBpooemC00A0n+vG08AoUlo1rem7Tw5PDQ1iaLrwXwyY
+4XVjeiBrmxtmIIrM2ztJZSd/yj1HodJTTJ3FSoZLPWSNIZtHgziaLvQ28CUs94N+Zbv4ccwOJ2Z7
+4CADoRTXdX1i4HauTMxylle6qA5/sz4fDtEgj6YLbgNyZWiaJIdHCe/iUxOWXcMhGtR4XUOKK2ky
+BmbFCe/i0uQszfBAhp3VWaJBnZeBAAPy9XIZgMaE5HNVyfDX+WMaA1KLpgtuA0GglTT9XLCz3Mnv
+kbyEZrg7b4kGWmi6cN3Aswi9gcMNKKWfkrcbQAMtLwOglKasVPpHVOivAWKZF+mhFw20utBpgHtb
+0vxC15BLPO7t+gaATgNgOp3qXP7zQWQ8z82u+pBaeuhF4xIuGgAIFGU5iNeGg6sGwGQyMb/nPqSn
+D3oZeE98sAGt/wHw3fu0L7RprgAAAABJRU5ErkJgggA=
+</rawitemdata></item>
+<item name='$MimeType' sign='true'><text>image/png</text></item>
+<item name='$FileModDT' sign='true'><datetime>20200728T233345,74+03</datetime></item>
+<item name='$ImageNames' sign='true'><text>C:\Работа\Изобретения\Administrator ToolKit\.rsrc\0\ICON\icon.png</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item></note>
+

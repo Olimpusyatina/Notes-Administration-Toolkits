@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<note default='true' class='view' xmlns='http://www.lotus.com/dxl' version='11.0'
+ maintenanceversion='1.0' replicaid='432585B300289458'>
+<noteinfo noteid='11a' unid='15E935433C61DED3432585B300289460' sequence='1'>
+<created><datetime>20200728T102314,24+03</datetime></created>
+<modified><datetime>20200728T102314,27+03</datetime></modified>
+<revised><datetime>20200728T102314,26+03</datetime></revised>
+<lastaccessed><datetime>20201227T022754,85+03</datetime></lastaccessed>
+<addedtofile><datetime>20200728T102314,26+03</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Alexandr S. Olympiev/O=OTTO/C=RU</name></updatedby>
+<item name='$TITLE'><text/></item>
+<item name='$Formula' summary='true'><formula compiled='true'>
+HAAFAA4ACgABAAQAJCQkJAQABAAAAAgAZgADAA==
+</formula></item>
+<item name='$FormulaClass'><text>1</text></item></note>
+

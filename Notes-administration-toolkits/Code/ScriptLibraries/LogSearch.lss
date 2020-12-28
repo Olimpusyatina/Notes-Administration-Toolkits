@@ -1,0 +1,142 @@
+'++LotusScript Development Environment:2:5:(Options):0:74
+'********************************************
+'Library LogSearch
+'Olimpus: Sep 8, 2020
+'********************************************
+Option Public
+Option Declare
+
+'++LotusScript Development Environment:2:5:(Forward):0:1
+Declare Sub Initialize
+Declare Function SL_searchInList(events As Variant, values As Variant) As Variant
+Declare Function SL_searchInString(event_, Values As Variant) As Boolean
+Declare Function SL_searchInEvents(logDb As NotesDatabase, eventType As String, startDate As NotesDateTime, stopDate As NotesDateTime, values As Variant) As Variant
+Declare Function SL_getFormulaDate (dt As NotesDateTime) As String
+
+'++LotusScript Development Environment:2:5:(Declarations):0:10
+Private nLine As String
+Private Const designElem = {LogSearch}
+
+'++LotusScript Development Environment:2:2:Initialize:2:10
+
+Sub Initialize
+	On Error GoTo ErrH
+	nLine = Chr(10) & Chr(13)
+
+
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(ErL) & nLine & Error$ & nLine & Err
+	Resume endH
+EndH:
+End Sub
+
+
+'++LotusScript Development Environment:2:1:SL_searchInList:6:8
+'********************************************
+'Function searchInList
+'String
+'Olimpus: Sep 8, 2020
+'********************************************
+Function SL_searchInList(events As Variant, values As Variant) As Variant
+	On Error GoTo ErrH
+
+	Dim result As Variant
+	Dim i As Integer
+	
+	ForAll event_ In events
+		If SL_searchInString(event_, values) Then
+			ReDim Preserve result(i) As String
+			result(i) = event_			
+		End If
+	End ForAll
+	
+	SL_searchInList = result
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+
+'++LotusScript Development Environment:2:1:SL_searchInString:6:8
+'********************************************
+'Function SL_searchInString
+'Boolean
+'Olimpus: Sep 8, 2020
+'********************************************
+Function SL_searchInString(event_, Values As Variant) As Boolean
+	On Error GoTo ErrH
+
+	SL_searchInString = True
+	If Not IsArray(values) And TypeName(Values) <> "STRING" Then
+		SL_searchInString = False
+	ElseIf isArray(Values) Then
+		ForAll value In Values
+			If InStr(event_, value) = 0 Then SL_searchInString = False
+		End ForAll
+	Else
+		If InStr(event_, values) = 0 Then SL_searchInString = False
+	End If
+		
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+'++LotusScript Development Environment:2:1:SL_searchInEvents:6:8
+'********************************************
+'Function SL_searchInEvents
+'Variant
+'Olimpus: Sep 8, 2020
+'********************************************
+Function SL_searchInEvents(logDb As NotesDatabase, eventType As String, startDate As NotesDateTime, stopDate As NotesDateTime, values As Variant) As Variant
+	On Error GoTo ErrH
+
+	Dim formula As String
+	formula = {@Contains(@UpperCase(EventList); @UpperCase("} & Join(values,{":"}) &  {"))}
+	If eventType <> "All" And eventType <> "" Then formula = formula & { & form = "} & eventType & {"}
+	formula = formula & { & @Date(StartTime) >= @Date(} & SL_getFormulaDate(startDate) & {) & @Date(FinishTime) <= @Date(} & SL_getFormulaDate(stopDate) & {)}
+	
+	Dim dc As NotesDocumentCollection
+	Set dc = logDb.Search(Formula, startDate, 0)
+	
+	Dim doc As NotesDocument
+	Dim result As Variant
+	
+	Set doc = dc.Getfirstdocument()
+	While Not doc Is Nothing
+		If IsArray(Result) Then
+			result = ArrayAppend(result, SL_searchInList(doc.Getitemvalue("Events"), values))
+		Else
+			result = SL_searchInList(doc.Getitemvalue("Events"), values)
+		End If
+		
+		Set doc = dc.Getnextdocument(doc)
+	Wend
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+
+'++LotusScript Development Environment:2:1:SL_getFormulaDate:6:8
+'********************************************
+'Function SL_getFormulaDate
+'String
+'Olimpus: Sep 8, 2020
+'********************************************
+Function SL_getFormulaDate (dt As NotesDateTime) As String
+	On Error GoTo ErrH
+
+	SL_getFormulaDate = Year(dt.Lslocaltime) & ";" & Month(dt.Lslocaltime) & ";" & Day(dt.Lslocaltime) & ";" & Hour(dt.Lslocaltime) & ";" & Minute(dt.Lslocaltime) & ";" & Second(dt.Lslocaltime)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function

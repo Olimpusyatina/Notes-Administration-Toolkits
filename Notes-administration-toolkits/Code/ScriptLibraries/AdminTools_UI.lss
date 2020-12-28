@@ -1,0 +1,164 @@
+'++LotusScript Development Environment:2:5:(Options):0:74
+'********************************************
+'Library AdminTools
+'Olimpus: Oct 1, 2020
+'********************************************
+Option Public
+Option Declare
+
+Use "AdminTools"
+
+'++LotusScript Development Environment:2:5:(Forward):0:1
+Declare Sub Initialize
+Declare Function ATUI_chooseUser() As ATUser
+Declare Function ATUI_chooseServer() As String
+Declare Function ATUI_chooseUsers() As ObjectCollection
+Declare Function ATUI_chooseServers () As Variant
+
+'++LotusScript Development Environment:2:5:(Declarations):0:10
+Private nLine As String
+Private Const designElem = {AdminTools_UI}
+
+
+
+
+'++LotusScript Development Environment:2:2:Initialize:2:10
+
+Sub Initialize
+	On Error GoTo ErrH
+	nLine = Chr(10) & Chr(13)
+
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(ErL) & nLine & Error$ & nLine & Err
+	Resume endH
+EndH:
+End Sub
+
+
+'++LotusScript Development Environment:2:1:ATUI_chooseUser:6:8
+'********************************************
+'Function ATUI_chooseUser
+'NotesDocument
+'Olimpus: Oct 1, 2020
+'********************************************
+Function ATUI_chooseUser() As ATUser
+	On Error GoTo ErrH
+	
+	Dim ws As New NotesUIWorkspace
+	Dim result As Variant	
+	Dim userName As String
+	
+	result = ws.Pickliststrings(0)
+	If IsEmpty(result) Then GoTo endH
+	userName = result(0)
+
+	Set ATUI_chooseUser = AT_getUser(userName)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+
+'++LotusScript Development Environment:2:1:ATUI_chooseServer:6:8
+'********************************************
+'Function ATUI_chooseServer
+'String
+'Olimpus: Oct 1, 2020
+'********************************************
+Function ATUI_chooseServer() As String
+	On Error GoTo ErrH
+	
+	Dim ws As New NotesUIWorkspace
+	
+	Dim servers() As String
+	Dim serversCount As Integer
+	
+
+	Dim dc As NotesDocumentCollection
+	Set dc = AT_getNab.search({form = "Server" & @IsUnAvailable($Conflict)}, Nothing, 0)
+	
+	Dim doc As NotesDocument
+	Set doc = dc.Getfirstdocument()
+	While Not doc Is Nothing
+		ReDim Preserve servers(serversCount) As String
+		servers(serversCount) = doc.Getitemvalue("ServerName")(0)
+		serversCount = serversCount + 1
+		Set doc = dc.Getnextdocument(doc)
+	Wend
+		
+	ATUI_chooseServer = ws.Prompt(4, "Серверы", "Выберите сервер", "", servers)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+
+'++LotusScript Development Environment:2:1:ATUI_chooseUsers:6:8
+'********************************************
+'Function ATUI_chooseUsers
+'Objectcollection
+'Olimpus: Oct 5, 2020
+'********************************************
+Function ATUI_chooseUsers() As ObjectCollection
+	On Error GoTo ErrH
+
+	Dim ws As New NotesUIWorkspace
+	Dim result As Variant	
+	Dim userName As String
+	Dim user As ATUSer
+	Dim users As New ObjectCollection
+	
+	result = ws.Pickliststrings(0, true)
+	If IsEmpty(result) Then GoTo endH
+	ForAll res In result
+		userName = res
+		Set user = AT_getUser(userName)
+		Call users.addObject(user)	
+	End ForAll
+		
+	Set ATUI_chooseUsers = users
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function
+
+'++LotusScript Development Environment:2:1:ATUI_chooseServers:6:8
+'********************************************
+'Function ATUI_chooseServers
+'Variant
+'Olimpus: Oct 1, 2020
+'********************************************
+Function ATUI_chooseServers () As Variant
+	On Error GoTo ErrH
+
+	Dim ws As New NotesUIWorkspace
+	
+	Dim servers() As String
+	Dim serversCount As Integer
+	
+	Dim dc As NotesDocumentCollection
+	Set dc = AT_getNab.search({form = "Server" & @IsUnAvailable($Conflict)}, Nothing, 0)
+	
+	Dim doc As NotesDocument
+	Set doc = dc.Getfirstdocument()
+	While Not doc Is Nothing
+		ReDim Preserve servers(serversCount) As String
+		servers(serversCount) = doc.Getitemvalue("ServerName")(0)
+		serversCount = serversCount + 1
+		Set doc = dc.Getnextdocument(doc)
+	Wend
+	
+	ATUI_chooseServers = ws.Prompt(7, "Серверы", "Выберите сервер", "", servers)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function

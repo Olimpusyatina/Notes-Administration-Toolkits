@@ -1,0 +1,248 @@
+'++LotusScript Development Environment:2:5:(Options):0:74
+'********************************************
+'Library CalendarEntry
+'Olimpus: 14.10.2020
+'********************************************
+Option Public
+Option Declare
+
+'++LotusScript Development Environment:2:5:(Forward):0:1
+Declare Class CEntry
+Declare Sub Initialize
+
+'++LotusScript Development Environment:2:5:(Declarations):0:10
+Private nLine As String
+Private Const designElem = {CalendarEntry}
+
+Const APP_FORM = "Appointment"
+Const DD_SERVER = "DCS/OTTO/RU"
+Const SEPERATOR = "!!"
+Class CEntry
+	
+	Public Sub New()
+	End Sub
+	
+	Private startdttm As NotesDateTime
+	Private enddttm As NotesDateTime  
+	Private moddttm As NotesDateTime
+	Public Property Set StartDT As NotesDateTime
+		Set startdttm = StartDT
+	End Property
+	Public Property Set EndDT As NotesDateTime
+		Set enddttm = EndDT
+	End Property
+	
+	Private strLocation As String
+	Public Property Set Location As String 
+		Me.strLocation = Location
+	End Property 
+	
+	Private varCategories As Variant
+	Public Property Set Categories As String 
+		Me.varCategories = Split(Categories,";")
+	End Property
+	
+	Private strType As String
+	Public Property Set AppType As String
+		Me.strType = AppType
+	End Property
+	
+	Public Property Get AppType As String
+		Select Case UCase (Me.StrType)
+			Case "APPOINTMENT", "TERMIN"
+				AppType = "0"
+			Case "ANNIVERSARY", "JAHRESTAG"
+				AppType = "1"
+			Case "EVENT", "GANZTAEGIGE VERANSTALTUNG"
+				AppType = "2"
+			Case "MEETING", "BESPRECHUNG"
+				AppType = "3"
+			Case "REMINDER", "ERINNERUNG"
+				AppType = "4"
+			Case Else
+				AppType = "0"
+		End Select
+	End Property
+	
+	Private strsubject As String
+	Public Property Get subject As String
+		subject = Me.strsubject
+	End Property
+	Public Property Set subject As String
+		Me.strsubject = subject
+	End Property 
+	
+	Private struser As String
+	Public Property Get user As String
+		user = Me.struser
+	End Property
+	Public Property Set user As String
+		Me.struser = user
+	End Property
+	
+	Public Property Get MailFile As String
+		Dim s As New NotesSession
+		
+		If Me.struser = "" Then
+			MailFIle = ""
+		Else ' Notes Version is < 8.x
+			
+			If s.NotesBuildVersion < 307 Then
+				Dim db As New NotesDatabase ( DD_SERVER, "names.nsf" )
+				Dim v As NotesView
+				Dim doc As NotesDocument
+				If db.IsOpen() Then
+					Set v = db.GetView("($Users)")
+					If Not ( v Is Nothing ) Then
+						Set doc = v.GetDocumentByKey (Me.user)
+						If Not ( doc Is Nothing ) Then
+							MailFIle = doc.MailServer(0) & SEPERATOR & doc.MailFile(0)
+						Else
+							GoTo ERR_USER_NOT_FOUND
+						End If
+					Else
+						GoTo ERR_USER_NOT_FOUND
+					End If
+				Else
+					GoTo ERR_USER_NOT_FOUND
+				End If
+				
+			Else ' we are running at least Notes Version 8
+				On Error 4731 GoTo ERR_USER_NOT_FOUND
+				Dim notesdir As NotesDirectory
+				Set notesdir  = s.getDirectory(DD_SERVER)
+				Dim homeserver As Variant
+				homeserver =  notesdir.GetMailInfo (Me.struser, False, False)
+				mailfile = CStr(homeserver(0)) & SEPERATOR & CStr(homeserver(3))  
+			End If     
+EXIT_PROPERTY:
+			Exit Property
+ERR_USER_NOT_FOUND:
+			mailfile = ""
+			Resume EXIT_PROPERTY
+		End If
+		
+	End Property
+	
+	Public Function CreateSingleEntry As NotesDocument
+		On Error GoTo errH
+'		CreateSingleEntry = 0 ' no error
+		
+		If Trim(Me.strSubject) = "" Then
+'			CreateSingleEntry = 3 ' Subject missing
+			Exit Function
+		End If
+		
+		If Me.startdttm.TimeDifference (Me.enddttm) > 0 Then
+'			CreateSingleEntry = 4 ' EndDT before StartDT
+			Exit Function
+		End If
+		
+		If Me.MailFile = "" Then
+'			CreateSingleEntry = 1 'No MailFile or User not found
+			Exit Function
+		End If
+		
+		Dim db As New NotesDatabase ( _
+		StrToken (Me.Mailfile,SEPERATOR,1), StrToken (Me.Mailfile,SEPERATOR,2)) 
+		
+		If db.IsOpen () Then
+			Dim session As New NotesSession
+			Dim nam As NotesName
+			Dim cEntry As New NotesDocument (db)
+			Dim rtitem As Variant
+			Dim itemIcon As NotesItem
+			Dim item As NotesItem
+			Dim ret As Variant
+			
+			Set nam = session.CreateName(Me.struser)    
+			
+			'----------- Set User and Description ----------------
+			cEntry.Form = APP_FORM
+			cEntry.~$Programmatically = "1"
+			'cEntry.tmpOwnerHW = "0"
+			Set item = New NotesItem(cEntry, "From", nam.canonical)
+			item.IsAuthors = True
+			Set item = New NotesItem(cEntry, "Principal", nam.canonical)
+			'Set item = New NotesItem(cEntry, "Chair", nam.canonical)
+			Set item = New NotesItem(cEntry, "$BusyName", nam.canonical)
+			item.IsNames = True
+			
+			cEntry.AppointmentType = Me.AppType
+			Select Case Me.AppType
+			Case 0
+				Set itemIcon = New NotesItem(cEntry, "_ViewIcon", 160)
+			Case 1
+				Set itemIcon = New NotesItem(cEntry, "_ViewIcon", 63) 
+			Case 2
+				Set itemIcon = New NotesItem(cEntry, "_ViewIcon", 168)
+			Case 3
+				Set itemIcon = New NotesItem(cEntry, "_ViewIcon", 9)
+			Case 4
+				Set itemIcon = New NotesItem(cEntry, "_ViewIcon", 158)
+		End Select
+			itemIcon.IsSummary = True
+			
+			cEntry.~$BusyPriority = "1"
+			cEntry.Subject = Me.subject
+			
+			'----------- Set Date and Times ----------------
+			cEntry.StartDateTime = Me.startdttm.LSLocalTime
+			cEntry.StartDate = Me.startdttm.LSLocalTime
+			cEntry.StartTime = Me.startdttm.LSLocalTime
+			cEntry.EndDateTime = Me.enddttm.LSLocalTime
+			cEntry.EndDate = Me.enddttm.LSLocalTime
+			cEntry.EndTime = Me.enddttm.LSLocalTime
+			cEntry.calendarDateTime = Me.startdttm.LSLocalTime
+			
+			'----------- Set Other Fields ----------------
+			cEntry.~$NoPurge = Me.enddttm.LSLocalTime
+			cEntry.~$PublicAccess = "1"
+			cEntry.MailOptions=""
+			cEntry.tmpWhichList = ""
+			
+			Set item = New NotesItem(cEntry, "ExcludeFromView", "D")
+			Call item.AppendToTextList ("S")
+			cEntry.OrgTable = "C0"
+			cEntry.Location = Me.strLocation
+			Set item = New NotesItem(cEntry, "Categories", varCategories)     
+			'cEntry.Categories = "Test"
+			cEntry.Logo = "stdNotesLtr0"
+			cEntry.OrgState = "x"
+			cEntry.Repeats = ""
+			cEntry.Resources = ""
+			cEntry.SaveOptions = ""
+			cEntry.SequenceNum = "1"
+			cEntry.APPTUNID = cEntry.UniversalID
+	
+			Call cEntry.ComputeWithForm (False,False)
+			Call cEntry.save(False, True)
+			Set CreateSingleEntry = cEntry
+		Else
+'			CreateSingleEntry = 2 'MalFile cannot be opened
+		End If
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$ 
+EndH:
+	End Function
+	
+End Class
+ 
+'++LotusScript Development Environment:2:2:Initialize:2:10
+
+Sub Initialize
+	On Error GoTo ErrH
+	nLine = Chr(10) & Chr(13)
+
+
+
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(ErL) & nLine & Error$ & nLine & Err
+	Resume endH
+EndH:
+End Sub
+
+
+

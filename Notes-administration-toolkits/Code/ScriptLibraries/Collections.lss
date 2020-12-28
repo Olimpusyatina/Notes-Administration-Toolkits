@@ -1,0 +1,788 @@
+'++LotusScript Development Environment:2:5:(Options):0:74
+'********************************************
+'Library Collections
+'DCS-Olympiev: Jul 31, 2019
+'********************************************
+Option Public
+Option Declare
+
+'++LotusScript Development Environment:2:5:(Forward):0:1
+Declare Class Interface
+Declare Class ObjectCollection
+Declare Sub Initialize
+Declare Function executeMethod(obj As Variant, methodName As String) As Variant
+
+'++LotusScript Development Environment:2:5:(Declarations):0:10
+Private nLine As String
+Private Const designElem = "Collections"
+
+Public global_interface_return_value As Variant
+Public global_interface_input_value As Variant
+
+Const UP_DIRECTION = True
+Const DOWN_DIRECTION = True
+'********************************************
+'Class Interface
+%Rem 
+	Класс Interface - базовый класс для наследования
+	Критерии для наследования от Interface:
+		1. Если в объекте подразумевается хранение NotesDocument полученного не из NotesSession.CurrentDatabase, то NotesDocument и NotesDocument.ParentDatabase
+		должны храниться как поля объекта
+		Методы класса Interface:
+			equals() - boolean, сравнивает объекты. True - это один и тот же объект; False - объекты разные. Можно не переопределять. По умолчанию: obj1.getKey() = obj2.getKey()
+			getKey() - String, осуществляется поиск элемента в коллекции. По умолчанию учавствует в equals()
+			getName() - String, имя объекта. По умолчанию используется в getValueForSort()			
+			getValueForSort() - String, по данному значению происходит сортировка объектов в objectCollection. Можно не переопределять. 
+				По умолчанию getValueForSort() = getName()
+			removeMe() - boolean. Удаление объекта. True - объект успешно удалён; False - объект не удалён.
+			save() - boolean. Сохранение объекта. True - объект сохранён; False - объект не сохранён.
+%End Rem
+'Olimpus: Jul 31, 2019
+'********************************************
+Class Interface
+	Sub New
+		On Error GoTo ErrH
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Function equals 
+	'сравнивает объекты. True - это один и тот же объект; False - объекты разные. Можно не переопределять. По умолчанию: obj1.getKey() = obj2.getKey()
+	'Boolean
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function equals(obj As Variant) As Boolean ' comment
+		On Error GoTo ErrH
+
+		equals = Me.getKey() = obj.getKey()
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getKey
+	'осуществляется поиск элемента в коллекции. По умолчанию учавствует в equals()
+	'String
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function getKey() As String
+		On Error GoTo ErrH
+
+		Error 9999, "Реализуй метод getKey() в своём классе!!!"
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getName
+	'имя объекта. По умолчанию используется в getValueForSort()	
+	'String
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function getName() As String
+		On Error GoTo ErrH
+
+		Error 9999, "Реализуй метод getName() в своём классе!!!"
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getValueForSort
+	'String
+	'по данному значению происходит сортировка объектов в objectCollection. Можно не переопределять. 
+	'	По умолчанию getValueForSort() = getName()
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function getValueForSort() As String
+		On Error GoTo ErrH
+
+		getValueForSort = getName()
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function removeMe
+	'Boolean
+	'Удаление объекта. True - объект успешно удалён; False - объект не удалён.
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function removeMe() As Boolean
+		On Error GoTo ErrH
+
+		Error 9999, "Реализуй метод removeMe() в своём классе!!!"
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function save
+	'Boolean
+	'Сохранение объекта. True - объект сохранён; False - объект не сохранён.
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function save() As Boolean
+		On Error GoTo ErrH
+
+		Error 9999, "Реализуй метод save() в своём классе!!!"
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function clone
+	'Interface
+	'Создаёт точную копию объекта
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function clone() As Interface
+	On Error GoTo ErrH
+
+		Error 9999, "Реализуй метод clone() в своём классе!!!"
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function callMethod
+	'Variant
+	'Olimpus: Dec 12, 2019
+	'********************************************
+	Function getItemValue(method As String) As Variant
+		On Error GoTo ErrH
+
+		Dim exString As String
+		global_interface_return_value = ""
+		Set global_interface_input_value = Me
+		exString = |
+				Sub exeSub
+				On Error Resume next
+					if isObject(global_interface_input_value.|  & method & |) then
+						set global_interface_return_value = global_interface_input_value.|  & method & |
+					else
+						global_interface_return_value = global_interface_input_value.|  & method & |
+					End if
+				On Error goto ErrH
+				goto EndH
+		ErrH:
+			Error Err, GetThreadInfo(1) & ", c. " & CStr(Erl) &  Error$
+		EndH:
+				End Sub
+		Call exeSub()
+				|
+
+		Execute(exString)
+	If IsObject(global_interface_return_value) Then
+		Set getItemValue = global_interface_return_value
+	Else
+		getItemValue = global_interface_return_value
+	End If
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+End Class
+
+'********************************************
+'Class ObjectCollection
+%REM
+	Класс ObjectCollection - коллекция объектов, унаследованных от класса Interface
+%END REM
+'Olimpus: Jul 31, 2019
+'********************************************
+Class ObjectCollection
+	Private className As String
+	Private ObjArr() As Interface
+	Private KeyArr() As String
+	Private pointer As Integer
+	Private withDubles As Boolean
+	Private isSortedFlag As Boolean
+	Private saved As Boolean
+	Private unSaved As ObjectCollection
+	
+	Sub New
+		Call resetCollection()
+	End Sub
+	'********************************************
+	'Sub setUnique
+	'Сохранять дубли объектов или нет
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Sub setUnique (withDubles As boolean)
+		On Error GoTo ErrH
+
+		Me.withDubles = withDubles
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Function isSaved
+	'Boolean
+	'Сохранена ли коллекция
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function isSaved As Boolean
+	On Error GoTo ErrH
+
+	isSaved = saved
+
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function resetCollection
+	'ObjectCollection
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function resetCollection () As ObjectCollection
+		On Error GoTo ErrH
+
+		Const FuncName = {ObjectCollection.resetCollection}
+		On Error GoTo ErrH
+
+		ReDim ObjArr(1 To 1)
+		Set ObjArr(1) = Nothing 
+		ReDim keyArr(1 To 1)
+		keyArr(1) = ""
+		pointer = 1
+		withDubles = False
+		isSortedFlag = False
+		saved = False
+		Set unSaved = Nothing
+		Set resetCollection = Me
+		
+		GoTo EndH 
+ErrH:
+		Error Err, DesignElem & " -> " & funcName & ", c. " & CStr(Erl) & nLine & Error$
+		Resume EndH
+EndH:
+	End Function
+	'********************************************
+	'Function addObject
+	'ObjectCollection
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function addObject (obj As Interface) As Interface
+		On Error GoTo ErrH
+
+		If obj Is Nothing Then GoTo endH
+		
+		If Not withDubles Then
+			If Me.hasObject(Obj) Then
+				Set addObject = Me.getObject(Obj)
+				GoTo Endh
+			End If
+		End If
+		
+		If objArr(pointer) Is Nothing Then
+			Set objArr(pointer) = obj
+			keyArr(pointer)= obj.getKey() 
+		Else
+			pointer = UBound(objArr) + 1
+			ReDim Preserve objArr(1 To pointer) As Interface
+			Set objArr(pointer) = obj	
+			ReDim Preserve keyArr(1 To pointer) As String
+			keyArr(pointer) = obj.getKey()		
+		End If
+		isSortedFlag = False
+		saved = False
+		Set addObject = objArr(pointer)
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function addObjectCollection
+	'ObjectCollection
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function addObjectCollection(objects As ObjectCollection) As ObjectCollection
+		On Error GoTo ErrH
+
+		Set addObjectCollection = Me
+		If objects Is Nothing Then GoTo Endh
+		
+		Dim object As Interface
+		Set object = objects.getFirstObject()
+		While Not object Is Nothing
+			Call addObject(object)
+			Set object = objects.getNextObject()
+		Wend
+		Set addObjectCollection = Me
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function count
+	'Long
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function count() As Long
+		On Error GoTo ErrH
+
+		If UBound(objArr) = 1 And (objArr(1) Is Nothing) Then
+			count = 0
+		Else
+			count = UBound(objArr)
+		End If 
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getFirstObject
+	'Interface
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function getFirstObject() As Interface
+		On Error GoTo ErrH
+
+		pointer = 1
+		Set getFirstObject = objArr(pointer)
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getNextObject
+	'Interface
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function getNextObject() As Interface
+		On Error GoTo ErrH
+
+		pointer = pointer + 1
+		If pointer > UBound(objArr) Then
+			pointer = UBound(objArr)
+			GoTo endH
+		End If
+		
+		Set getNextObject = objArr(pointer)
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getPrevObject
+	'Interface
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function getPrevObject() As Interface
+		On Error GoTo ErrH
+
+		pointer = pointer - 1
+		If pointer  < 1 Then
+			pointer = 1
+			GoTo endH
+		End If
+		Set getPrevObject = objArr(pointer) 
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getLastObject
+	'Interface
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function getLastObject() As Interface
+		On Error GoTo ErrH
+
+		pointer = UBound(objArr)
+		Set getLastObject = objArr(pointer)
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function deleteAllObjects
+	'Boolean
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function deleteAllObjects As Boolean
+		On Error GoTo ErrH
+
+		deleteAllObjects = True 
+
+		Dim index As Integer
+		
+		ForAll obj In objArr
+			If Not obj Is Nothing Then 
+				index = ArrayGetIndex(keyArr, obj.getKey())
+				If Not  obj.removeMe() Then
+					deleteAllObjects = False
+				Else
+					Call removeElement(index)
+				End If
+			End If
+		End ForAll
+		
+		If deleteAllObjects Then Call resetCollection()
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function save
+	'ObjectCollection
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function save() As ObjectCollection
+		On Error GoTo ErrH
+		
+		saved = True
+		
+		ForAll obj In ObjArr
+			If Not obj.save() Then
+				saved = False
+				If unSaved Is Nothing Then Set unSaved = New ObjectCollection
+				Call unSaved.addObject(obj)		
+			End If
+		End ForAll
+
+		Set save = unSaved
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function sort
+	'ObjectCollection
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function sort(direction As Boolean) As ObjectCollection
+		On Error GoTo ErrH
+
+		Dim i As Long
+		Dim j As Long
+		Dim buffObj As Interface
+		Dim needAgain As Boolean
+		
+		For i = LBound(objArr) To UBound(objArr)-1
+			needAgain = False
+			For j = LBound(objArr) To UBound(objArr) - i
+				If objArr(j).getValueForSort() > objArr(j + 1).getValueForSort() = direction Then
+					Set buffObj = objArr(j + 1)
+					Set objArr(j + 1) = objArr(j)
+					Set objArr(j) = buffObj
+					needAgain = True
+				End If
+			Next
+			If Not needAgain Then Exit For
+		Next
+		
+		isSortedFlag = True
+		Set sort = Me
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function isSorted
+	'Boolean
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function isSorted() As Boolean
+		On Error GoTo ErrH
+
+		IsSorted = isSortedFlag
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getObjectByKey
+	'Interface
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function getObjectByKey(key As String) As Interface
+		On Error GoTo ErrH
+
+		If Not IsNull(ArrayGetIndex(keyArr,key)) Then Set getObjectByKey = objArr(ArrayGetIndex(keyArr,key))
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function unique
+	'ObjectCollection
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function unique() As ObjectCollection
+		On Error GoTo ErrH
+
+		Dim tmpVal As String
+		Dim index As Integer
+		
+		pointer = UBound(keyArr)
+		While pointer > 1
+			tmpval = keyArr(pointer)
+			If Not objArr(pointer) Is Nothing Then
+				index = ArrayGetIndex(keyArr, tmpVal)
+				While index <> pointer
+					keyArr(index) = ""
+					Set objArr(index) = Nothing
+					index = ArrayGetIndex(keyArr, tmpVal)
+				Wend
+			End If
+			pointer = pointer - 1
+		Wend
+
+		Call fullTrimCollection
+		Set unique = Me
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function fullTrimCollection
+	'ObjectCollection
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function fullTrimCollection () As ObjectCollection
+		On Error GoTo ErrH
+
+		If count = 0 Then GoTo endH
+
+		Dim StepSize As Integer
+		
+		pointer = 1
+		
+		While pointer <= count
+			If objArr(pointer) Is Nothing Then
+				stepSize = stepSize +1
+			Else
+				Set objArr(pointer - stepSize) = objArr(pointer)
+				keyArr(pointer - stepSize) = keyArr(pointer)
+			End If
+			pointer = pointer + 1	
+		Wend
+		
+		ReDim Preserve objArr(1 To pointer - 1 - stepSize) As Interface
+		ReDim Preserve keyArr(1 To pointer - 1 - stepSize) As String
+		pointer = 1
+		Set FullTrimCollection = Me
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function hasObject
+	'Boolean
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function hasObject (obj As Interface) As Boolean
+		On Error GoTo ErrH
+
+		hasObject = Not IsNull(ArrayGetIndex(keyArr, obj.getKey()))
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getObject
+	'Interface
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function getObject(obj As Interface) As Interface
+	On Error GoTo ErrH
+
+	If hasObject(Obj) Then Set getObject = objArr(ArrayGetIndex(keyArr,obj.getKey()))
+
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function removeObject
+	'boolean
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function removeObject(obj As Interface) As boolean
+	On Error GoTo ErrH
+
+		If hasObject(obj) Then
+			For pointer = ArrayGetIndex(keyArr, obj.getKey()) To UBound(keyArr)-1
+				Set ObjArr(pointer) = objArr(pointer+1)
+				keyArr(pointer) = keyArr(pointer+1)
+			Next
+			pointer = pointer - 1
+			ReDim Preserve objArr(pointer) As Interface
+			ReDim Preserve keyArr(pointer) As String
+			
+		End If
+		removeObject = True
+
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function removeElement
+	'Boolean
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function getElement (index As Variant) As Interface
+		On Error GoTo ErrH
+		
+		If Not IsNumeric (index) Then GoTo EndH
+		
+		Dim rIndex As Long
+		rIndex = index
+		
+		If rIndex <= UBound(keyArr) And rIndex > 0 Then
+			Set getElement = ObjArr(rIndex)
+		End If
+
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function removeElement
+	'Boolean
+	'Olimpus: Jul 31, 2019
+	'********************************************
+	Function removeElement(index As Variant) As Boolean
+	On Error GoTo ErrH
+		
+		If Not IsNumeric (index) Then GoTo EndH
+		
+		Dim rIndex As Long
+		rIndex = index
+		
+		If rIndex <= UBound(keyArr) And rIndex > 0 Then
+			For pointer = rIndex To UBound(keyArr)-1
+				Set ObjArr(pointer) = objArr(pointer+1)
+				keyArr(pointer) = keyArr(pointer+1)
+			Next
+			pointer = pointer - 1
+			ReDim Preserve objArr(pointer) As Interface
+			ReDim Preserve keyArr(pointer) As String
+		End If
+
+		removeElement = True
+
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+End Class
+
+'++LotusScript Development Environment:2:2:Initialize:2:10
+
+Sub Initialize
+	On Error GoTo ErrH
+
+	nLine = Chr(10) & Chr(13)
+
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(ErL) & nLine & Error$
+	Resume endH
+EndH:
+End Sub
+
+
+'++LotusScript Development Environment:2:1:executeMethod:6:8
+'********************************************
+'Function executeMethod
+'String
+'Olimpus: 23.11.2020
+'********************************************
+Function executeMethod(obj As Variant, methodName As String) As Variant
+	On Error GoTo ErrH
+
+	Dim exString As String
+	global_interface_return_value = ""
+	Set global_interface_input_value = obj
+	exString = |
+				Sub exeSub
+				On Error Resume next
+					if isObject(global_interface_input_value.|  & methodName & |) then
+						set global_interface_return_value = global_interface_input_value.|  & methodName & |
+					elseif not isNull(global_interface_input_value.|  & methodName & |) then							
+						global_interface_return_value = global_interface_input_value.|  & methodName & |
+					else
+						global_interface_return_value = "Null"
+					End if
+				On Error goto ErrH
+				goto EndH
+		ErrH:
+			Error Err, GetThreadInfo(1) & ", c. " & CStr(Erl) &  Error$
+		EndH:
+				End Sub
+		Call exeSub()
+				|
+
+	Execute(exString)
+	If IsObject(global_interface_return_value) Then
+	Set executeMethod = global_interface_return_value
+Else
+	executeMethod = global_interface_return_value
+End If
+	
+	GoTo EndH
+ErrH:
+	Stop
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+End Function

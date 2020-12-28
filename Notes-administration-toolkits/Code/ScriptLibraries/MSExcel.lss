@@ -1,0 +1,1040 @@
+'++LotusScript Development Environment:2:5:(Options):0:74
+'********************************************
+'Library MSExcel
+'Olimpus: Sep 5, 2019
+'********************************************
+
+Option Public
+Option Declare
+
+Use "A1_Setup"
+Use "Collections"
+Use "ErrorHandler"
+
+'++LotusScript Development Environment:2:5:(Forward):0:1
+Declare Class MSExcel
+Declare Class Range As interface
+Declare Sub Initialize
+Declare Sub Terminate
+
+'++LotusScript Development Environment:2:5:(Declarations):0:10
+
+Private nLine As String
+Private Const designElem = {MSExcel}
+
+Public msExcel As MSExcel
+
+'********************************************
+'Class MSExcel
+'Olimpus: Sep 5, 2019
+'********************************************
+Class MSExcel
+	Private ExcelApp As Variant
+	Private Worksheet_ex As Variant
+	Private sendToMail As Boolean
+	Private sendToList As Variant
+	Private excelName As String
+	Private i_ex As Long
+	Private j_ex As Long
+	Private initialized As Boolean
+	Private showingOnscreen As Boolean
+	Private sheetsCount As Integer
+	Private needautoFit As Boolean	
+	Sub New
+		On Error GoTo ErrH	
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Function init
+	'Variant
+	'Olimpus: Sep 5, 2019
+	'********************************************
+	Function init()	
+		On Error GoTo ErrH
+
+		Set ExcelApp = Nothing
+		Set ExcelApp = CreateObject("Excel.Application")
+		excelName = "Excel File"
+		Call ExcelApp.Workbooks.Add
+		sheetsCount = 1
+		Set WorkSheet_ex = ExcelApp.Workbooks(1).Worksheets(1)
+		i_ex = 1
+		j_ex = 1
+		initialized = True
+		needautoFit = True
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function workSheet
+	'Variant
+	'Olimpus: Sep 6, 2019
+	'********************************************
+	Function workSheet As Variant
+		On Error GoTo ErrH
+
+		Set workSheet = Worksheet_ex
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function Range
+	'Variant
+	'Olimpus: Sep 5, 2019
+	'********************************************
+	Function Range(rang As String) As Variant
+		On Error GoTo ErrH
+
+		Set Range = Worksheet.Range(rang)
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function Columns
+	'Variant
+	'Olimpus: Sep 5, 2019
+	'********************************************
+	Function Columns (rang As Integer) As Variant
+		On Error GoTo ErrH
+		
+		Set Columns = worksheet.Columns(rang)
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function Rows
+	'Variant
+	'Olimpus: Nov 26, 2019
+	'********************************************
+	Function Rows (rang As Integer) As Variant
+		On Error GoTo ErrH
+
+		Set Rows = worksheet.Rows(rang)
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Property Set needSend
+	'Olimpus: Sep 5, 2019
+	'********************************************
+	Property Set needSend
+		On Error GoTo ErrH
+
+		sendToMail = needSend
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Property
+	'********************************************
+	'Property Set sendTo
+	'Olimpus: Sep 5, 2019
+	'********************************************
+	Property Set sendTo
+		On Error GoTo ErrH
+
+		Me.sendToList = sendTo
+		needSend = True
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Property
+	'********************************************
+	'Function finish
+	'Boolean
+	'Olimpus: Sep 5, 2019
+	'********************************************
+	Function finish As Boolean
+		On Error GoTo ErrH
+		
+		If needautoFit then Call makeAutofit()
+		
+		If sendToMail Then
+			Call sendExcelToMail()
+		Else
+			Call makeVisible()
+		End If
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Sub autofit
+	'Olimpus: 30.10.2020
+	'********************************************
+	Private Sub makeAutofit()
+	On Error GoTo ErrH
+	
+		Call workSheet_ex.columns().EntireColumn.AutoFit
+	
+	GoTo EndH
+ErrH:
+	stop
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Sub makeVisible
+	'Olimpus: Sep 5, 2019
+	'********************************************
+	Sub makeVisible
+		On Error GoTo ErrH
+
+		ExcelApp.Visible = True
+		showingOnscreen = True
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Sub sendExcelToMail
+	'Olimpus: Sep 5, 2019
+	'********************************************
+	Private Sub sendExcelToMail
+		On Error GoTo ErrH
+
+		Dim s As New NotesSession
+		Dim File_Name As String
+		Dim memo As NotesDocument
+		Dim rtiBody As NotesRichTextItem
+		
+		File_Name = GetTempDirectory() & excelName & {.xlsx}
+		ExcelApp.DisplayAlerts = False
+		If FileExists(File_Name) Then
+			Kill File_Name
+		End If
+		Call ExcelApp.ActiveWorkBook.SaveAs(File_Name)
+		Call ExcelApp.ActiveWorkBook.Close
+		
+		Set memo = s.Currentdatabase.Createdocument()
+		
+		If Not IsArray(sendToList) Then
+			If sendToList = "" Then sendToList = s.Username
+		End If
+		
+		Call memo.Replaceitemvalue("sendTo", sendToList)
+		Call memo.Replaceitemvalue("Subject", getName)
+		Set rtiBody = memo.Createrichtextitem("Body")
+		Call rtiBody.Embedobject(EMBED_ATTACHMENT, "", File_Name)
+		
+		Call memo.Send(False)
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Property Set setName
+	'Olimpus: Sep 5, 2019
+	'********************************************
+	Property Set setName 
+		On Error GoTo ErrH
+
+		excelName = setName
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Property
+	'********************************************
+	'Property Get getName
+	'String
+	'Olimpus: Sep 5, 2019
+	'********************************************
+	Property Get getName As String
+		On Error GoTo ErrH
+
+		getName = excelName
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Property
+	'********************************************
+	'Property Set displayAlerts
+	'Olimpus: Sep 5, 2019
+	'********************************************
+	Property Set displayAlerts
+		On Error GoTo ErrH
+
+		ExcelApp.displayAlerts = displayAlerts
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Property
+	'********************************************
+	'Sub quit
+	'Olimpus: Sep 5, 2019
+	'********************************************
+	Sub quit
+		On Error GoTo ErrH
+
+		Call ExcelApp.quit
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Sub incrementI
+	'Olimpus: Sep 6, 2019
+	'********************************************
+	Sub incrementI
+		On Error GoTo ErrH
+		
+		i_ex = i_ex + 1			
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Sub decrementI
+	'Olimpus: Sep 6, 2019
+	'********************************************
+	Sub decrementI
+		On Error GoTo ErrH
+
+		i_ex = i_ex - 1
+		If i_ex = 0 Then Error 8001, "i"
+		
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Sub incrementJ
+	'Olimpus: Sep 6, 2019
+	'********************************************
+	Sub incrementJ
+		On Error GoTo ErrH
+
+		j_ex = j_ex + 1
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Sub decrementJ
+	'Olimpus: Sep 6, 2019
+	'********************************************
+	Sub decrementJ
+		On Error GoTo ErrH
+
+		j_ex = j_ex - 1
+		If i_ex = 0 Then Error 8001, "j"
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Property Get i
+	'Long
+	'Olimpus: Sep 6, 2019
+	'********************************************
+	Property Get i As Long
+		On Error GoTo ErrH
+
+		i = i_ex
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Property
+	'********************************************
+	'Property Set i
+	'Olimpus: Sep 6, 2019
+	'********************************************
+	Property Set i As Long
+		On Error GoTo ErrH
+
+		i_ex = i
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Property
+	'********************************************
+	'Property Get j
+	'Long
+	'Olimpus: Sep 6, 2019
+	'********************************************
+	Property Get j As Long
+		On Error GoTo ErrH
+
+		j = j_ex
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Property
+	'********************************************
+	'Property Set j
+	'Olimpus: Sep 6, 2019
+	'********************************************
+	Property Set j As Long
+		On Error GoTo ErrH
+
+		j_ex = j	
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Property
+	'********************************************
+	'Function ActiveWindow
+	'Variant
+	'Olimpus: Sep 6, 2019
+	'********************************************
+	Function ActiveWindow As Variant
+		On Error GoTo ErrH
+
+		Set ActiveWindow = ExcelApp.ActiveWindow
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function inited
+	'Boolean
+	'Olimpus: Sep 6, 2019
+	'********************************************
+	Function inited As Boolean
+		On Error GoTo ErrH
+		
+		inited = initialized 
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function onScreen
+	'Boolean
+	'Olimpus: Sep 6, 2019
+	'********************************************
+	Function onScreen As Boolean
+		On Error GoTo ErrH
+
+		onScreen = showingOnscreen	
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function chooseWorkSheet
+	'Variant
+	'Olimpus: Nov 12, 2019
+	'********************************************
+	Function chooseWorkSheet (i As Integer) As Variant
+		On Error GoTo ErrH
+		
+		Dim j As integer
+		For j = sheetsCount + 1 To i
+			Call ExcelApp.Worksheets.Add(,ExcelApp.Worksheets(sheetsCount))
+			sheetsCount = sheetsCount + 1
+		Next
+
+		Set Worksheet_ex = ExcelApp.Worksheets(i)
+		Set chooseWorkSheet = Worksheet_ex
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Sub setWorksheetName
+	'Olimpus: Nov 12, 2019
+	'********************************************
+	Sub setWorksheetName (newName As String) 
+		On Error GoTo ErrH
+
+		Worksheet_ex.Name = newName
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Function getNextWorksheet
+	'Variant
+	'Olimpus: Nov 12, 2019
+	'********************************************
+	Function getNextWorksheet As Variant
+		On Error GoTo ErrH
+
+		Set Worksheet_ex = ExcelApp.Worksheets.add
+		sheetsCount = sheetsCount + 1
+		Set getNextWorksheet = Worksheet_ex
+		i = 1
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getFile
+	'Variant
+	'Olimpus: Nov 26, 2019
+	'********************************************
+	Function getFile(path As String) As Variant
+		On Error GoTo ErrH
+		
+		Set ExcelApp = Nothing
+		Set ExcelApp = CreateObject("Excel.Application")
+		excelName = "Excel File"
+		Call ExcelApp.Workbooks.Open(path)
+		sheetsCount = ExcelApp.Worksheets.count
+		Set WorkSheet_ex = ExcelApp.Workbooks(1).Worksheets(1)
+		i_ex = 1
+		j_ex = 1
+		initialized = True
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function activeWorkBook
+	'Variant
+	'Olimpus: Nov 27, 2019
+	'********************************************
+	Function activeWorkBook As Variant
+		On Error GoTo ErrH
+
+		Set activeWorkBook = ExcelApp.ActiveWorkbook
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getFieldNames
+	'Variant
+	'Olimpus: Dec 12, 2019
+	'********************************************
+	Function getFieldNames() As Variant
+		On Error GoTo ErrH
+		'	Dim arr As Variant
+		Dim fNames As Variant
+		'	ReDim arr(0) As String
+		Set fNames = activeWorkBook().Names
+		'	ForAll fName In fNames
+		'		arr = ArrayAppend(arr, fName.Name)
+		'	End ForAll
+		
+		Set getFieldNames = fNames
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function fillTemplateWithFields
+	'Boolean
+	'Olimpus: Dec 12, 2019
+	'********************************************
+	Function fillTemplateWithFields(filePath As String, obj As Variant) As Boolean
+		On Error GoTo ErrH
+
+		Call getFile(filePath)
+		Dim names As Variant
+		Set names = getFieldNames()
+
+		ForAll fName In Names
+			Call fillName(fName, obj)
+		End ForAll
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	
+	'********************************************
+	'Function fillName
+	'Boolean
+	'Olimpus: Dec 18, 2019
+	'********************************************
+	Private Function fillName(fName As Variant, obj As Variant) As Boolean
+		On Error GoTo ErrH
+
+		Dim data As Variant
+		Dim data1 As Variant
+		Dim range As Variant
+		Dim startRange As String
+		
+		If fName.name = "testInsert" Then stop
+
+		If IsObject(obj.getItemValue(fName.Name)) Then
+			Set data = obj.getItemValue(fName.Name)
+			If TypeName(data) = "OBJECTCOLLECTION" Then
+				Set data1 = data.getLastObject()
+				Set range = fName.RefersToRange
+				While Not data1 Is Nothing
+					startRange = range.address
+					ForAll value In data1.getItemValue("loopable")
+						Call fillCell(range, value)
+						Set range = loopColumn(range)
+					End ForAll
+					
+					Set data1 = data.getPrevObject()
+					If Not data1 Is Nothing Then
+						Call range.EntireRow.Insert(-4121, 1)
+						Set range = worksheet_ex.range(startRange)
+					End If
+				Wend
+			Else	
+				Call fillName(fName, data)
+			End if
+		ElseIf IsArray(obj.getItemValue(fName.Name)) Or IsList(obj.getItemValue(fName.Name)) Then
+			Set range = fName.RefersToRange
+			ForAll value In obj.getItemValue(fName.Name)
+				Call fillCell(range, value)
+				Set range = loopColumn(range)
+			End ForAll
+		Else
+			Call fillCell(fName.RefersToRange, obj.getItemValue(fName.Name))
+		End If
+
+		fillName = True
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function fillCell
+	'Boolean
+	'Olimpus: Dec 18, 2019
+	'********************************************
+	Function fillCell(Range As Variant, data As Variant) As Boolean
+		On Error GoTo ErrH
+
+		Range.Value = data
+
+		fillCell = True
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function loopRange
+	'Variant
+	'Olimpus: Dec 18, 2019
+	'********************************************
+	Function loopColumn(range As Variant) As Variant 
+		On Error GoTo ErrH
+
+		Dim address As String
+		Dim newAddress As STring
+		
+		Dim newRange As Variant
+		
+		address = range.Address
+		newAddress = getNextAddressColumn(Address)
+		Set newRange = Worksheet_ex.Range(newAddress)
+		
+		Set loopColumn = newRange
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function loopBackColumn
+	'Variant
+	'Olimpus: Feb 7, 2020
+	'********************************************
+	Function loopBackColumn (range As Variant) As Variant
+		On Error GoTo ErrH
+
+		Dim address As String
+		Dim newAddress As String
+		
+		Dim newRange As Variant
+		
+		address = range.Address
+		newAddress = getPreviosAddressColumn(Address)
+		Set newRange = Worksheet_ex.Range(newAddress)
+		
+		Set loopBackColumn = newRange
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function loopRow
+	'Variant
+	'Olimpus: Dec 19, 2019
+	'********************************************
+	Function loopRowAppend(range As Variant) As Variant
+		On Error GoTo ErrH
+
+		Dim newRange As Variant
+		Call Range.EntireRow.INsert
+		Set newRange = Worksheet.Cells(range.row, range.column)
+		Set loopRowAppend = newRange
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getNextAddressRow
+	'String
+	'Olimpus: Dec 18, 2019
+	'********************************************
+	Function getNextAddressRow(address As STring) As String
+		On Error GoTo ErrH
+
+		Dim range As Variant
+		Set range = Worksheet_ex.Range(address)
+		
+		Dim cell As Variant
+		Print range.MergeArea.rows.count
+		Set cell = Worksheet_ex.cells(range.row + range.MergeArea.rows.count, range.column)
+		
+		getNextAddressRow = cell.address	
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getPreviosAddressRow
+	'String
+	'Olimpus: Feb 7, 2020
+	'********************************************
+	Function getPreviosAddressRow(address As String) As String
+		On Error GoTo ErrH
+
+		
+		Dim range As Variant
+		Set range = Worksheet_ex.Range(address)
+		
+		Dim cell As Variant
+		Set cell = Worksheet_ex.cells(range.row - range.MergeArea.rows.count, range.column)
+		
+		getPreviosAddressRow = cell.address	
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getNextAddressColumn
+	'String
+	'Olimpus: Dec 19, 2019
+	'********************************************
+	Function getNextAddressColumn(address As String) As String
+		On Error GoTo ErrH
+
+		Dim range As Variant
+		Set range = Worksheet_ex.Range(address)
+		
+		Dim cell As Variant
+		Set cell = Worksheet_ex.cells(range.row , range.column + range.MergeArea.columns.count)
+		
+		getNextAddressColumn = cell.address	
+		
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function getPreviosAddressColumn
+	'String
+	'Olimpus: Feb 7, 2020
+	'********************************************
+	Function getPreviosAddressColumn (address As String) As String
+		On Error GoTo ErrH
+
+		
+		Dim range As Variant
+		Set range = Worksheet_ex.Range(address)
+		
+		Dim cell As Variant
+		Set cell = Worksheet_ex.cells(range.row , range.column - range.MergeArea.columns.count)
+		
+		getPreviosAddressColumn = cell.address	
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function loopRow
+	'Variant
+	'Olimpus: Feb 6, 2020
+	'********************************************
+	Function loopRow (Range As Variant) As Variant
+		On Error GoTo ErrH
+
+		Dim address As String
+		Dim newAddress As String
+		
+		Dim newRange As Variant
+		
+		address = range.Address
+		newAddress = getNextAddressRow(Address)
+		Set newRange = Worksheet_ex.Range(newAddress)
+		
+		Set loopRow = newRange
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function loopBackRow
+	'Variant
+	'Olimpus: Feb 7, 2020
+	'********************************************
+	Function loopBackRow (Range As Variant) As Variant
+		On Error GoTo ErrH
+
+		Dim address As String
+		Dim newAddress As String
+		
+		Dim newRange As Variant
+		
+		address = range.Address
+		newAddress = getPreviosAddressRow(Address)
+		Set newRange = Worksheet_ex.Range(newAddress)
+		
+		Set loopBackRow = newRange
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function freezeLabels
+	'Boolean
+	'Olimpus: Oct 14, 2019
+	'********************************************
+	Function freezeLabels (Labels As Variant) As Boolean
+		On Error GoTo ErrH
+		Dim i As Integer
+		
+		For i = 1 To UBound(labels) + 1
+			WorkSheet.Cells(1, i).value = labels(i-1)
+		Next
+		Call incrementI()
+		ExcelApp.ActiveWindow.SplitRow = 1
+		ExcelApp.activeWindow.FreezePanes = True
+		With WorkSheet.Range(WorkSheet.Cells(1, 1), WorkSheet.Cells(1, UBound(labels) + 1))
+			.Font.Bold = True
+			.Borders.linestyle = 8
+			.Interior.Pattern = 1
+			.Interior.PatternColorIndex = -4105
+			.Interior.Color = 14214634
+			.HorizontalAlignment = -4108
+			.VerticalAlignment = -4108
+		End With	
+		
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Function Cells
+	'Variant
+	'Olimpus: Sep 29, 2020
+	'********************************************
+	Function Cells(i As Integer, j As Integer) As Variant
+	On Error GoTo ErrH
+
+		Set Cells = Worksheet.Cells(i,j)
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	'********************************************
+	'Property Set AutoFit
+	'Olimpus: 30.10.2020
+	'********************************************
+	Public Property Set AutoFit() As Boolean
+	On Error GoTo ErrH
+
+	needautoFit = AutoFit
+	
+	GoTo EndH
+ErrH:
+	stop
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Property
+	'********************************************
+	'Property Get AutoFit
+	'Boolean
+	'Olimpus: 30.10.2020
+	'********************************************
+	Public Property Get AutoFit() As Boolean
+	On Error GoTo ErrH
+
+	AutoFit = needautoFit
+	
+	GoTo EndH
+ErrH:
+	stop
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Property
+End Class
+
+'********************************************
+'Class Range
+'Olimpus: Sep 5, 2019
+'********************************************
+Class Range As interface
+	Private position As String
+		
+	Sub New
+		On Error GoTo ErrH
+
+	
+	
+		GoTo EndH
+ErrH:
+		Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Sub
+	'********************************************
+	'Function getKey
+	'String
+	'Olimpus: Sep 5, 2019
+	'********************************************
+	Function getKey() As String
+	On Error GoTo ErrH
+
+	getKey = position	
+	
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & TypeName(Me) & " -> " & GetThreadInfo(1) & ", c. " & CStr(Erl) & nLine & Error$
+EndH:
+	End Function
+	
+	
+End Class
+'++LotusScript Development Environment:2:2:Initialize:2:10
+
+Sub Initialize
+	On Error GoTo ErrH
+	nLine = Chr(10) & Chr(13)
+
+	Set msExcel = New MSExcel
+
+	GoTo EndH
+ErrH:
+	Error Err, DesignElem & " -> " & GetThreadInfo(1) & ", c. " & CStr(ErL) & nLine & Error$ & nLine & Err
+	Resume endH
+EndH:
+End Sub
+
+
+
+'++LotusScript Development Environment:2:2:Terminate:1:10
+Sub Terminate
+	If IsObject(msExcel) Then
+		If msExcel.inited Then
+			If Not msExcel.onScreen() Then
+				msExcel.DisplayAlerts = False
+				Call msExcel.Quit					
+			End If
+		End If
+		Set msExcel = Nothing
+	End If
+End Sub
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
